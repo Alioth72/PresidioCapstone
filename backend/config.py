@@ -17,12 +17,16 @@ class Settings(BaseSettings):
     JWT_ALGORITHM: str = "HS256"
     JWT_EXPIRATION_MINUTES: int = 60
 
-    # Database
-    DATABASE_URL: str = "sqlite+aiosqlite:///./library.db"
+    # Database — Docker PostgreSQL (override in production with Azure PG)
+    DATABASE_URL: str = "postgresql+asyncpg://postgres:postgres@localhost:5432/library"
 
     # Gemini AI
     GEMINI_API_KEY: str = ""
     GEMINI_MODEL: str = "gemini-2.0-flash"
+
+    # Library settings
+    DEFAULT_LOAN_DAYS: int = 14
+    MAX_ACTIVE_LOANS: int = 5
 
     # Server
     BACKEND_PORT: int = 8000

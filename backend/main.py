@@ -8,6 +8,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from backend.config import settings
 from backend.db.session import init_db
 
 logger = logging.getLogger(__name__)
@@ -23,6 +24,13 @@ async def lifespan(app: FastAPI):
     logger.info("Initializing database...")
     await init_db()
     logger.info("Database ready.")
+
+    # Auto-seed in development mode
+    if settings.APP_ENV == "development":
+        from backend.db.seed import seed
+        logger.info("Dev mode — running seed...")
+        await seed()
+
     yield
     logger.info("Shutting down...")
 
