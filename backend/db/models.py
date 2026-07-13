@@ -15,9 +15,13 @@ import enum
 from datetime import datetime, timezone
 
 from sqlalchemy import (
-    Column, Integer, String, DateTime, Enum, ForeignKey, Text, Boolean, JSON, Index
+    Column, Integer, String, Enum, ForeignKey, Text, Boolean, JSON, Index
 )
 from sqlalchemy.orm import relationship
+from sqlalchemy.types import DateTime as _DateTime
+
+# Use timezone-aware timestamps for PostgreSQL (TIMESTAMPTZ)
+DateTime = _DateTime(timezone=True)
 
 from backend.db.session import Base
 
@@ -90,6 +94,18 @@ class Loan(Base):
 
     user = relationship("User", back_populates="loans")
     book = relationship("Book", back_populates="loans")
+
+    @property
+    def book_title(self) -> str:
+        return self.book.title if self.book else ""
+
+    @property
+    def book_author(self) -> str:
+        return self.book.author if self.book else ""
+
+    @property
+    def username(self) -> str:
+        return self.user.username if self.user else ""
 
     # Composite index: "all active loans for a user" — used on every member dashboard load
     __table_args__ = (

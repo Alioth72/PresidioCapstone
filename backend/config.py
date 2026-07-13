@@ -10,6 +10,7 @@ class Settings(BaseSettings):
 
     # App
     APP_ENV: str = "development"
+    TESTING: bool = False
     SECRET_KEY: str = "change-me-in-production"
 
     # JWT

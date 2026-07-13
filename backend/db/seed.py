@@ -9,7 +9,7 @@ import asyncio
 import random
 from datetime import datetime, timezone, timedelta
 
-from passlib.hash import bcrypt
+import bcrypt as _bcrypt
 from sqlalchemy import select, func
 
 from backend.db.session import async_session, init_db
@@ -156,7 +156,7 @@ async def seed():
                 username=u["username"],
                 email=u["email"],
                 full_name=u["full_name"],
-                hashed_password=bcrypt.hash(u["password"]),
+                hashed_password=_bcrypt.hashpw(u["password"].encode(), _bcrypt.gensalt()).decode(),
                 role=u["role"],
             )
             db.add(user)
