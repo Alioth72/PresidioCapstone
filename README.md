@@ -98,6 +98,17 @@ docker compose up --build
     - *CSRF Mitigation*: Cookies are vulnerable to Cross-Site Request Forgery (CSRF). To mitigate this, the application sets the `SameSite=Lax` flag and enforces secure headers. Furthermore, the backend allows fallback to standard `Authorization` headers for API/testing client flexibility.
 - **Atomic Availability Management** — Handled concurrent stock adjustments atomically in the database layer using SQL-level updates with a conditional clause (`available_copies > 0`), ensuring thread-safe concurrency without expensive table locks.
 - **Gemini Function Calling** — The AI assistant uses structured tool declarations so it can search, borrow, and return books on behalf of the user with confirmation gates.
+- **Global State Management (Zustand vs. Context API)**:
+  - **Decision**: The application uses **Zustand** for global client-side state management.
+  - **Trade-offs & Rationale**:
+    - *Performance*: Subscribing components selector-query slices of state, preventing unnecessary re-renders when other states change.
+    - *Simplicity*: Highly developer-friendly API that avoids multi-layer Context provider nesting.
+    - *Separation*: Global auth/notifications are managed in Zustand, while server-side query state is kept in TanStack Query.
+- **Azure Cloud Architecture & IAM Security**:
+  - **PostgreSQL Flexible Server**: Configured for the `Standard_B1ms` burstable VM with minimum `32 GB` storage and disabled High Availability to fit within Azure's Student subscription credits.
+  - **Container Apps (ACA)**: Designed with the consumption-only model and scale-to-zero enabled.
+  - **Key Vault Secrets Integration**: Keys and connection strings are stored in Azure Key Vault.
+  - **Custom Least-Privilege IAM**: Configured a custom role definition (`azurerm_role_definition`) mapping permissions to exclusively read Key Vault secrets (`Microsoft.KeyVault/vaults/secrets/read`), assigned to the backend Container App's User-Assigned Managed Identity.
 
 ## License
 
