@@ -1,8 +1,35 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { z } from 'zod';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { useStore } from '../store';
 import { authApi } from '../api';
 import { BookOpen, UserPlus, LogIn } from 'lucide-react';
+
+const authSchema = z.object({
+  username: z.string()
+    .min(3, 'Username must be at least 3 characters')
+    .max(50, 'Username cannot exceed 50 characters')
+    .regex(/^[a-zA-Z0-9_]+$/, 'Alphanumeric and underscores only'),
+  password: z.string()
+    .min(6, 'Password must be at least 6 characters')
+    .max(50, 'Password cannot exceed 50 characters'),
+  email: z.string().optional(),
+  fullName: z.string().optional(),
+  role: z.enum(['member', 'admin']),
+  isLogin: z.boolean(),
+}).refine((data) => {
+  if (!data.isLogin) {
+    return !!data.email && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email);
+  }
+  return true;
+}, {
+  message: 'Invalid email address',
+  path: ['email'],
+});
+
+type AuthFormValues = z.infer<typeof authSchema>;
 
 export const LoginPage: React.FC = () => {
   const { login, showToast } = useStore();
@@ -11,45 +38,50 @@ export const LoginPage: React.FC = () => {
   const [isLogin, setIsLogin] = useState(true);
   const [loading, setLoading] = useState(false);
 
-  // Form Fields
-  const [username, setUsername] = useState('');
-  const [email, setEmail] = useState('');
-  const [fullName, setFullName] = useState('');
-  const [password, setPassword] = useState('');
-  const [role, setRole] = useState<'member' | 'admin'>('member');
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    reset,
+  } = useForm<AuthFormValues>({
+    resolver: zodResolver(authSchema),
+    defaultValues: {
+      username: '',
+      password: '',
+      email: '',
+      fullName: '',
+      role: 'member',
+      isLogin: true,
+    },
+  });
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!username.trim() || !password.trim()) {
-      showToast('Username and Password are required.', 'error');
-      return;
-    }
-
+  const onSubmit = async (data: AuthFormValues) => {
     setLoading(true);
     try {
-      if (isLogin) {
-        await login(username, password);
+      if (data.isLogin) {
+        await login(data.username, data.password);
         navigate('/');
       } else {
         // Register flow
-        if (!email.trim()) {
-          showToast('Email is required for registration.', 'error');
-          setLoading(false);
-          return;
-        }
         await authApi.register({
-          username,
-          email,
-          full_name: fullName || undefined,
-          password,
-          role
+          username: data.username,
+          email: data.email || '',
+          full_name: data.fullName || undefined,
+          password: data.password,
+          role: data.role,
         });
         showToast('Registration successful! Please login.', 'success');
         setIsLogin(true); // Switch to login mode
-        setPassword('');
+        reset({
+          username: data.username,
+          password: '',
+          email: '',
+          fullName: '',
+          role: 'member',
+          isLogin: true,
+        });
       }
-    } catch (err: any) {
-      // Toast notification is fired in store or we catch here
+    } catch (err) {
       console.error(err);
     } finally {
       setLoading(false);
@@ -104,35 +136,44 @@ export const LoginPage: React.FC = () => {
         </h2>
 
         {/* Form */}
-        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+        <form onSubmit={handleSubmit(onSubmit)} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+          {/* Hidden input to bind isLogin state to form data */}
+          <input type="hidden" {...register('isLogin')} value={isLogin ? 'true' : 'false'} />
+
           <div>
             <label style={{ display: 'block', fontWeight: 700, fontSize: '0.85rem', marginBottom: '0.4rem', textTransform: 'uppercase' }}>
-              Username
+              Username *
             </label>
             <input
               type="text"
               className="brut-input"
-              value={username}
-              onChange={e => setUsername(e.target.value)}
+              {...register('username')}
               placeholder="e.g. libraryuser"
-              required
             />
+            {errors.username && (
+              <span style={{ color: '#DC2626', fontSize: '0.75rem', fontWeight: 700, marginTop: '0.2rem', display: 'block' }}>
+                {errors.username.message}
+              </span>
+            )}
           </div>
 
           {!isLogin && (
             <>
               <div>
                 <label style={{ display: 'block', fontWeight: 700, fontSize: '0.85rem', marginBottom: '0.4rem', textTransform: 'uppercase' }}>
-                  Email Address
+                  Email Address *
                 </label>
                 <input
                   type="email"
                   className="brut-input"
-                  value={email}
-                  onChange={e => setEmail(e.target.value)}
+                  {...register('email')}
                   placeholder="e.g. user@example.com"
-                  required={!isLogin}
                 />
+                {errors.email && (
+                  <span style={{ color: '#DC2626', fontSize: '0.75rem', fontWeight: 700, marginTop: '0.2rem', display: 'block' }}>
+                    {errors.email.message}
+                  </span>
+                )}
               </div>
 
               <div>
@@ -142,41 +183,52 @@ export const LoginPage: React.FC = () => {
                 <input
                   type="text"
                   className="brut-input"
-                  value={fullName}
-                  onChange={e => setFullName(e.target.value)}
+                  {...register('fullName')}
                   placeholder="e.g. John Doe"
                 />
+                {errors.fullName && (
+                  <span style={{ color: '#DC2626', fontSize: '0.75rem', fontWeight: 700, marginTop: '0.2rem', display: 'block' }}>
+                    {errors.fullName.message}
+                  </span>
+                )}
               </div>
 
               <div>
                 <label style={{ display: 'block', fontWeight: 700, fontSize: '0.85rem', marginBottom: '0.4rem', textTransform: 'uppercase' }}>
-                  System Role
+                  System Role *
                 </label>
                 <select
                   className="brut-input brut-input-select"
-                  value={role}
-                  onChange={e => setRole(e.target.value as 'member' | 'admin')}
+                  {...register('role')}
                   style={{ fontWeight: 600 }}
                 >
                   <option value="member">Member (Borrow, Return, Chat)</option>
                   <option value="admin">Admin (Manage Catalog & Loans)</option>
                 </select>
+                {errors.role && (
+                  <span style={{ color: '#DC2626', fontSize: '0.75rem', fontWeight: 700, marginTop: '0.2rem', display: 'block' }}>
+                    {errors.role.message}
+                  </span>
+                )}
               </div>
             </>
           )}
 
           <div>
             <label style={{ display: 'block', fontWeight: 700, fontSize: '0.85rem', marginBottom: '0.4rem', textTransform: 'uppercase' }}>
-              Password
+              Password *
             </label>
             <input
               type="password"
               className="brut-input"
-              value={password}
-              onChange={e => setPassword(e.target.value)}
+              {...register('password')}
               placeholder="••••••••"
-              required
             />
+            {errors.password && (
+              <span style={{ color: '#DC2626', fontSize: '0.75rem', fontWeight: 700, marginTop: '0.2rem', display: 'block' }}>
+                {errors.password.message}
+              </span>
+            )}
           </div>
 
           {/* Submit Button */}
@@ -206,7 +258,18 @@ export const LoginPage: React.FC = () => {
           <div style={{ textAlign: 'center', marginTop: '0.5rem' }}>
             <button
               type="button"
-              onClick={() => setIsLogin(!isLogin)}
+              onClick={() => {
+                const nextIsLogin = !isLogin;
+                setIsLogin(nextIsLogin);
+                reset({
+                  username: '',
+                  password: '',
+                  email: '',
+                  fullName: '',
+                  role: 'member',
+                  isLogin: nextIsLogin,
+                });
+              }}
               style={{
                 background: 'none',
                 border: 'none',

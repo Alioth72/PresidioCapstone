@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
+import axios from 'axios';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { booksApi } from '../api';
+import { booksApi, type BookCreatePayload } from '../api';
 import { useStore } from '../store';
 import { BookCard } from '../components/BookCard';
 import { Search, Plus, X, BookOpen } from 'lucide-react';
@@ -68,7 +69,7 @@ export const CatalogPage: React.FC = () => {
   };
 
   const addBookMutation = useMutation({
-    mutationFn: (payload: any) => booksApi.create(payload),
+    mutationFn: (payload: BookCreatePayload) => booksApi.create(payload),
     onSuccess: (createdBook) => {
       showToast(`Successfully added "${createdBook.title}"!`, 'success');
       setShowAddModal(false);
@@ -85,8 +86,11 @@ export const CatalogPage: React.FC = () => {
       
       queryClient.invalidateQueries({ queryKey: ['books'] });
     },
-    onError: (err: any) => {
-      const msg = err.response?.data?.error?.message || 'Failed to create book.';
+    onError: (err) => {
+      let msg = 'Failed to create book.';
+      if (axios.isAxiosError(err) && err.response?.data?.error?.message) {
+        msg = err.response.data.error.message;
+      }
       showToast(msg, 'error');
     }
   });

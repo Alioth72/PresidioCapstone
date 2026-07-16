@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import axios from 'axios';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { chatApi, type ChatMessage } from '../api';
 import { useStore } from '../store';
@@ -76,11 +77,14 @@ export const ChatAssistant: React.FC<ChatAssistantProps> = ({ onRefreshCatalog }
         if (onRefreshCatalog) onRefreshCatalog();
       }
     },
-    onError: (err: any, _variables, context) => {
+    onError: (err, _variables, context) => {
       if (context?.previousHistory) {
         queryClient.setQueryData(['chatHistory'], context.previousHistory);
       }
-      const msg = err.response?.data?.error?.message || 'AI assistant had trouble responding.';
+      let msg = 'AI assistant had trouble responding.';
+      if (axios.isAxiosError(err) && err.response?.data?.error?.message) {
+        msg = err.response.data.error.message;
+      }
       showToast(msg, 'error');
     }
   });

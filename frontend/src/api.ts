@@ -76,6 +76,38 @@ export interface ChatMessage {
   created_at: string;
 }
 
+export interface UserRegisterPayload {
+  username: string;
+  email: string;
+  full_name?: string;
+  password?: string;
+  role?: 'admin' | 'member';
+}
+
+export interface BookCreatePayload {
+  title: string;
+  author: string;
+  isbn?: string;
+  description?: string;
+  category?: string;
+  publisher?: string;
+  publication_year?: number;
+  total_copies?: number;
+  cover_image_url?: string;
+}
+
+export interface BookUpdatePayload {
+  title?: string;
+  author?: string;
+  isbn?: string;
+  description?: string;
+  category?: string;
+  publisher?: string;
+  publication_year?: number;
+  total_copies?: number;
+  cover_image_url?: string;
+}
+
 export interface PaginatedBooks {
   items: Book[];
   total: number;
@@ -96,7 +128,7 @@ export const authApi = {
     localStorage.setItem('token', res.data.access_token);
     return res.data;
   },
-  register: async (payload: any) => {
+  register: async (payload: UserRegisterPayload) => {
     const res = await api.post<User>('/api/auth/register', payload);
     return res.data;
   },
@@ -126,11 +158,11 @@ export const booksApi = {
     const res = await api.get<Book>(`/api/books/${id}`);
     return res.data;
   },
-  create: async (payload: any) => {
+  create: async (payload: BookCreatePayload) => {
     const res = await api.post<Book>('/api/books/', payload);
     return res.data;
   },
-  update: async (id: number, payload: any) => {
+  update: async (id: number, payload: BookUpdatePayload) => {
     const res = await api.put<Book>(`/api/books/${id}`, payload);
     return res.data;
   },

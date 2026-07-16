@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import axios from 'axios';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { loansApi } from '../api';
 import { useStore } from '../store';
@@ -21,8 +22,11 @@ export const DashboardPage: React.FC = () => {
       queryClient.invalidateQueries({ queryKey: ['loans'] });
       queryClient.invalidateQueries({ queryKey: ['books'] });
     },
-    onError: (err: any) => {
-      const msg = err.response?.data?.error?.message || 'Failed to return book.';
+    onError: (err) => {
+      let msg = 'Failed to return book.';
+      if (axios.isAxiosError(err) && err.response?.data?.error?.message) {
+        msg = err.response.data.error.message;
+      }
       showToast(msg, 'error');
     }
   });

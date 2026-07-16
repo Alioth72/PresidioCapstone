@@ -1,4 +1,5 @@
 import React from 'react';
+import axios from 'axios';
 import { Link } from 'react-router-dom';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { type Book, loansApi } from '../api';
@@ -37,8 +38,11 @@ export const BookCard: React.FC<BookCardProps> = ({ book, onRefresh }) => {
       queryClient.invalidateQueries({ queryKey: ['loans'] });
       if (onRefresh) onRefresh();
     },
-    onError: (err: any) => {
-      const msg = err.response?.data?.error?.message || 'Failed to borrow book.';
+    onError: (err) => {
+      let msg = 'Failed to borrow book.';
+      if (axios.isAxiosError(err) && err.response?.data?.error?.message) {
+        msg = err.response.data.error.message;
+      }
       showToast(msg, 'error');
     }
   });

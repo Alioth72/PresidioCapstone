@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import axios from 'axios';
 import { type User, authApi } from './api';
 
 interface AuthState {
@@ -11,7 +12,7 @@ interface AuthState {
   showToast: (message: string, type?: 'success' | 'error' | 'info') => void;
   clearToast: () => void;
   login: (username: string, password: string) => Promise<void>;
-  logout: () => Promise<void>;
+  logout: (username?: string) => Promise<void>;
   checkAuth: () => Promise<void>;
 }
 
@@ -35,8 +36,11 @@ export const useStore = create<AuthState>((set, get) => ({
       const data = await authApi.login(username, password);
       set({ user: data.user, isAuthenticated: true });
       get().showToast(`Welcome back, ${data.user.full_name || data.user.username}!`, 'success');
-    } catch (err: any) {
-      const msg = err.response?.data?.error?.message || 'Login failed. Please check credentials.';
+    } catch (err) {
+      let msg = 'Login failed. Please check credentials.';
+      if (axios.isAxiosError(err) && err.response?.data?.error?.message) {
+        msg = err.response.data.error.message;
+      }
       get().showToast(msg, 'error');
       throw err;
     }
@@ -47,7 +51,7 @@ export const useStore = create<AuthState>((set, get) => ({
       await authApi.logout();
       set({ user: null, isAuthenticated: false });
       get().showToast('Logged out successfully.', 'info');
-    } catch (err: any) {
+    } catch (err) {
       set({ user: null, isAuthenticated: false });
       localStorage.removeItem('token');
     }

@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { booksApi, loansApi } from '../api';
+import { booksApi, loansApi, type BookUpdatePayload } from '../api';
 import { useStore } from '../store';
 import { Star, ChevronLeft, BookOpen, Trash2, Edit2, CheckCircle } from 'lucide-react';
 
@@ -70,8 +71,11 @@ export const BookDetailPage: React.FC = () => {
       queryClient.invalidateQueries({ queryKey: ['books'] });
       queryClient.invalidateQueries({ queryKey: ['loans'] });
     },
-    onError: (err: any) => {
-      const msg = err.response?.data?.error?.message || 'Failed to borrow book.';
+    onError: (err) => {
+      let msg = 'Failed to borrow book.';
+      if (axios.isAxiosError(err) && err.response?.data?.error?.message) {
+        msg = err.response.data.error.message;
+      }
       showToast(msg, 'error');
     }
   });
@@ -91,8 +95,11 @@ export const BookDetailPage: React.FC = () => {
       queryClient.invalidateQueries({ queryKey: ['book', bookId] });
       queryClient.invalidateQueries({ queryKey: ['bookReviews', bookId] });
     },
-    onError: (err: any) => {
-      const msg = err.response?.data?.error?.message || 'Failed to submit review.';
+    onError: (err) => {
+      let msg = 'Failed to submit review.';
+      if (axios.isAxiosError(err) && err.response?.data?.error?.message) {
+        msg = err.response.data.error.message;
+      }
       showToast(msg, 'error');
     }
   });
@@ -113,8 +120,11 @@ export const BookDetailPage: React.FC = () => {
       queryClient.invalidateQueries({ queryKey: ['books'] });
       navigate('/');
     },
-    onError: (err: any) => {
-      const msg = err.response?.data?.error?.message || 'Failed to delete book.';
+    onError: (err) => {
+      let msg = 'Failed to delete book.';
+      if (axios.isAxiosError(err) && err.response?.data?.error?.message) {
+        msg = err.response.data.error.message;
+      }
       showToast(msg, 'error');
     }
   });
@@ -126,15 +136,18 @@ export const BookDetailPage: React.FC = () => {
   };
 
   const editBookMutation = useMutation({
-    mutationFn: (payload: any) => booksApi.update(bookId, payload),
+    mutationFn: (payload: BookUpdatePayload) => booksApi.update(bookId, payload),
     onSuccess: () => {
       showToast('Book catalog record updated.', 'success');
       setShowEditModal(false);
       queryClient.invalidateQueries({ queryKey: ['book', bookId] });
       queryClient.invalidateQueries({ queryKey: ['books'] });
     },
-    onError: (err: any) => {
-      const msg = err.response?.data?.error?.message || 'Failed to update book.';
+    onError: (err) => {
+      let msg = 'Failed to update book.';
+      if (axios.isAxiosError(err) && err.response?.data?.error?.message) {
+        msg = err.response.data.error.message;
+      }
       showToast(msg, 'error');
     }
   });
