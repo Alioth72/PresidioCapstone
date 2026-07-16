@@ -126,10 +126,10 @@ export const CatalogPage: React.FC = () => {
         marginBottom: '2rem'
       }}>
         <div>
-          <h1 style={{ margin: 0, fontSize: '2.5rem', fontFamily: 'var(--font-heading)' }}>
+          <h1 style={{ margin: 0, fontSize: '2.5rem', fontFamily: 'var(--font-heading)', color: 'var(--text-color)' }}>
             THE CATALOG
           </h1>
-          <p style={{ color: '#4B5563', fontWeight: 500, marginTop: '0.25rem' }}>
+          <p style={{ color: 'var(--text-color)', opacity: 0.8, fontWeight: 500, marginTop: '0.25rem' }}>
             Browse and borrow from our curated selection of fine texts.
           </p>
         </div>
@@ -138,7 +138,7 @@ export const CatalogPage: React.FC = () => {
           <button
             onClick={() => setShowAddModal(true)}
             className="brut-btn brut-btn-secondary"
-            style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}
+            style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#000000' }}
           >
             <Plus size={18} strokeWidth={2.5} /> ADD BOOK
           </button>
@@ -147,7 +147,7 @@ export const CatalogPage: React.FC = () => {
 
       {/* Filter and Search Panel */}
       <div className="brut-card" style={{
-        backgroundColor: '#FFFFFF',
+        backgroundColor: 'var(--card-bg)',
         padding: '1.25rem',
         marginBottom: '2rem'
       }}>
@@ -222,9 +222,9 @@ export const CatalogPage: React.FC = () => {
             border: '5px solid var(--primary)',
             borderTopColor: 'transparent',
             animation: 'spin 1s linear infinite',
-            boxShadow: '2px 2px 0px #000000'
+            boxShadow: '2px 2px 0px var(--border-color)'
           }} />
-          <p style={{ marginTop: '1rem', fontWeight: 700, fontFamily: 'var(--font-heading)' }}>LOADING CATALOG...</p>
+          <p style={{ marginTop: '1rem', fontWeight: 700, fontFamily: 'var(--font-heading)', color: 'var(--text-color)' }}>LOADING CATALOG...</p>
           <style>{`
             @keyframes spin {
               to { transform: rotate(360deg); }
@@ -235,12 +235,13 @@ export const CatalogPage: React.FC = () => {
         <div style={{
           textAlign: 'center',
           padding: '4rem 1rem',
-          border: '3px dashed #000000',
-          backgroundColor: '#FFFFFF'
+          border: '3px dashed var(--border-color)',
+          backgroundColor: 'var(--card-bg)',
+          color: 'var(--text-color)'
         }}>
           <BookOpen size={48} style={{ margin: '0 auto 1rem auto', color: '#9CA3AF' }} />
           <h3 style={{ margin: 0, fontSize: '1.5rem' }}>No books found</h3>
-          <p style={{ color: '#4B5563', marginTop: '0.25rem' }}>Try broadening your search term or selection filters.</p>
+          <p style={{ color: 'var(--text-color)', opacity: 0.8, marginTop: '0.25rem' }}>Try broadening your search term or selection filters.</p>
         </div>
       ) : (
         <>
@@ -264,7 +265,7 @@ export const CatalogPage: React.FC = () => {
                 onClick={() => setPage(prev => Math.max(prev - 1, 1))}
                 disabled={page === 1}
                 className="brut-btn brut-btn-primary"
-                style={{ padding: '0.5rem 1.25rem', boxShadow: '2px 2px 0px #000000' }}
+                style={{ padding: '0.5rem 1.25rem', boxShadow: '2px 2px 0px var(--border-color)' }}
               >
                 PREV
               </button>
@@ -273,10 +274,11 @@ export const CatalogPage: React.FC = () => {
                 fontFamily: 'var(--font-heading)',
                 fontWeight: 900,
                 fontSize: '1.1rem',
-                border: '2px solid #000000',
+                border: '2px solid var(--border-color)',
                 padding: '0.4rem 1rem',
-                backgroundColor: '#FFFFFF',
-                boxShadow: '2px 2px 0px #000000'
+                backgroundColor: 'var(--card-bg)',
+                color: 'var(--text-color)',
+                boxShadow: '2px 2px 0px var(--border-color)'
               }}>
                 PAGE {page} OF {totalPages}
               </div>
@@ -285,7 +287,7 @@ export const CatalogPage: React.FC = () => {
                 onClick={() => setPage(prev => Math.min(prev + 1, totalPages))}
                 disabled={page === totalPages}
                 className="brut-btn brut-btn-primary"
-                style={{ padding: '0.5rem 1.25rem', boxShadow: '2px 2px 0px #000000' }}
+                style={{ padding: '0.5rem 1.25rem', boxShadow: '2px 2px 0px var(--border-color)' }}
               >
                 NEXT
               </button>
@@ -314,12 +316,13 @@ export const CatalogPage: React.FC = () => {
             maxWidth: '95%',
             maxHeight: '90vh',
             overflowY: 'auto',
-            backgroundColor: '#FFFFFF',
-            boxShadow: '8px 8px 0px #000000',
+            backgroundColor: 'var(--card-bg)',
+            boxShadow: '8px 8px 0px var(--border-color)',
+            color: 'var(--text-color)',
             padding: '2rem'
           }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', borderBottom: '2.5px solid #000000', paddingBottom: '0.5rem' }}>
-              <h3 style={{ margin: 0, fontFamily: 'var(--font-heading)', textTransform: 'uppercase' }}>Add New Book to Catalog</h3>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', borderBottom: '2.5px solid var(--border-color)', paddingBottom: '0.5rem' }}>
+              <h3 style={{ margin: 0, fontFamily: 'var(--font-heading)', textTransform: 'uppercase', color: 'var(--text-color)' }}>Add New Book to Catalog</h3>
               <button
                 onClick={() => setShowAddModal(false)}
                 className="brut-btn brut-btn-flat"

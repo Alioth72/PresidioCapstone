@@ -163,7 +163,8 @@ export const ChatAssistant: React.FC<ChatAssistantProps> = ({ onRefreshCatalog }
         <div style={{
           padding: '1.25rem',
           borderBottom: 'var(--border-width) solid var(--border-color)',
-          backgroundColor: '#FFFFFF',
+          backgroundColor: 'var(--card-bg)',
+          color: 'var(--text-color)',
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center'
@@ -171,14 +172,14 @@ export const ChatAssistant: React.FC<ChatAssistantProps> = ({ onRefreshCatalog }
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
             <div style={{
               backgroundColor: 'var(--primary)',
-              border: '2px solid #000000',
+              border: '2.5px solid var(--border-color)',
               padding: '0.25rem',
               display: 'flex',
               alignItems: 'center'
             }}>
               <Bot size={20} strokeWidth={2.5} />
             </div>
-            <span style={{ fontFamily: 'var(--font-heading)', fontWeight: 800, fontSize: '1.1rem' }}>
+            <span style={{ fontFamily: 'var(--font-heading)', fontWeight: 800, fontSize: '1.1rem', color: 'var(--text-color)' }}>
               AI ASSISTANT
             </span>
           </div>
@@ -188,10 +189,10 @@ export const ChatAssistant: React.FC<ChatAssistantProps> = ({ onRefreshCatalog }
               <button
                 onClick={handleClear}
                 className="brut-btn brut-btn-flat"
-                style={{ padding: '0.25rem 0.5rem', border: '1.5px solid #000000', backgroundColor: '#FEF2F2' }}
+                style={{ padding: '0.25rem 0.5rem', border: '1.5px solid var(--border-color)', backgroundColor: 'var(--accent)', color: '#000000' }}
                 title="Clear Chat"
               >
-                <Trash2 size={16} color="#DC2626" />
+                <Trash2 size={16} color="#000000" />
               </button>
             )}
             <button
@@ -212,19 +213,20 @@ export const ChatAssistant: React.FC<ChatAssistantProps> = ({ onRefreshCatalog }
           display: 'flex',
           flexDirection: 'column',
           gap: '1rem',
-          backgroundColor: '#FAF7F2'
+          backgroundColor: 'var(--bg-color)'
         }}>
           {messages.length === 0 ? (
             <div style={{
               textAlign: 'center',
               padding: '2rem 1rem',
-              border: '2px dashed #9CA3AF',
-              backgroundColor: '#FFFFFF',
+              border: '2.5px dashed var(--border-color)',
+              backgroundColor: 'var(--card-bg)',
+              color: 'var(--text-color)',
               margin: '2rem 0'
             }}>
-              <Bot size={40} style={{ margin: '0 auto 0.75rem auto', color: '#9CA3AF' }} />
+              <Bot size={40} style={{ margin: '0 auto 0.75rem auto', color: 'var(--text-color)', opacity: 0.6 }} />
               <p style={{ fontWeight: 600, fontSize: '0.95rem' }}>How can I help you today?</p>
-              <p style={{ fontSize: '0.8rem', color: '#6B7280', marginTop: '0.25rem' }}>
+              <p style={{ fontSize: '0.8rem', color: 'var(--text-color)', opacity: 0.7, marginTop: '0.25rem' }}>
                 You can say things like:<br />
                 <em>"Show me tech books"</em><br />
                 <em>"Borrow the book Clean Code"</em><br />
@@ -243,8 +245,8 @@ export const ChatAssistant: React.FC<ChatAssistantProps> = ({ onRefreshCatalog }
                 }}>
                   <div style={{
                     backgroundColor: isUser ? 'var(--secondary)' : 'var(--card-bg)',
-                    color: 'var(--text-color)',
-                    border: '2px solid #000000',
+                    color: isUser ? '#000000' : 'var(--text-color)',
+                    border: '2.5px solid var(--border-color)',
                     padding: '0.75rem 1rem',
                     fontSize: '0.9rem',
                     lineHeight: 1.4,
@@ -289,7 +291,7 @@ export const ChatAssistant: React.FC<ChatAssistantProps> = ({ onRefreshCatalog }
         <form onSubmit={handleSend} style={{
           padding: '1rem',
           borderTop: 'var(--border-width) solid var(--border-color)',
-          backgroundColor: '#FFFFFF',
+          backgroundColor: 'var(--card-bg)',
           display: 'flex',
           gap: '0.5rem'
         }}>
@@ -306,7 +308,7 @@ export const ChatAssistant: React.FC<ChatAssistantProps> = ({ onRefreshCatalog }
             type="submit"
             className="brut-btn brut-btn-primary"
             disabled={!input.trim() || sendMessageMutation.isPending}
-            style={{ padding: '0.6rem 0.8rem', boxShadow: '2px 2px 0px #000000' }}
+            style={{ padding: '0.6rem 0.8rem', boxShadow: '2px 2px 0px var(--border-color)' }}
           >
             <Send size={16} strokeWidth={2.5} />
           </button>

@@ -124,6 +124,10 @@ class Loan(Base):
         return self.book.author if self.book else ""
 
     @property
+    def book_category(self) -> str:
+        return self.book.category if self.book else ""
+
+    @property
     def username(self) -> str:
         return self.user.username if self.user else ""
 

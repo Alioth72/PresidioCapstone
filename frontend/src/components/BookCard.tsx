@@ -84,7 +84,7 @@ export const BookCard: React.FC<BookCardProps> = ({ book, onRefresh }) => {
           height: '240px',
           borderBottom: 'var(--border-width) solid var(--border-color)',
           position: 'relative',
-          backgroundColor: '#F3F4F6',
+          backgroundColor: 'rgba(156, 163, 175, 0.1)',
           display: 'flex',
           justifyContent: 'center',
           alignItems: 'center',
@@ -149,12 +149,13 @@ export const BookCard: React.FC<BookCardProps> = ({ book, onRefresh }) => {
               position: 'absolute',
               top: '0.5rem',
               left: '0.5rem',
-              backgroundColor: '#FFFFFF',
-              border: '1.5px solid #000000',
+              backgroundColor: 'var(--card-bg)',
+              color: 'var(--text-color)',
+              border: '1.5px solid var(--border-color)',
               padding: '0.2rem 0.5rem',
               fontSize: '0.75rem',
               fontWeight: 700,
-              boxShadow: '1.5px 1.5px 0px #000000'
+              boxShadow: '1.5px 1.5px 0px var(--border-color)'
             }}>
               {book.category}
             </span>
@@ -167,11 +168,11 @@ export const BookCard: React.FC<BookCardProps> = ({ book, onRefresh }) => {
             right: '0.5rem',
             backgroundColor: book.available_copies > 0 ? '#4ADE80' : '#F87171',
             color: '#000000',
-            border: '1.5px solid #000000',
+            border: '1.5px solid var(--border-color)',
             padding: '0.2rem 0.5rem',
             fontSize: '0.75rem',
             fontWeight: 800,
-            boxShadow: '1.5px 1.5px 0px #000000'
+            boxShadow: '1.5px 1.5px 0px var(--border-color)'
           }}>
             {book.available_copies > 0 ? `${book.available_copies}/${book.total_copies} Left` : 'Out of Stock'}
           </div>
@@ -182,7 +183,7 @@ export const BookCard: React.FC<BookCardProps> = ({ book, onRefresh }) => {
           {/* Rating */}
           <div style={{ display: 'flex', alignItems: 'center', marginBottom: '0.5rem' }}>
             {stars}
-            <span style={{ fontSize: '0.8rem', fontWeight: 700, marginLeft: '0.4rem', color: '#4B5563' }}>
+            <span style={{ fontSize: '0.8rem', fontWeight: 700, marginLeft: '0.4rem', color: 'var(--text-color)', opacity: 0.8 }}>
               ({book.average_rating ? book.average_rating.toFixed(1) : '0.0'})
             </span>
           </div>
@@ -197,13 +198,15 @@ export const BookCard: React.FC<BookCardProps> = ({ book, onRefresh }) => {
             textOverflow: 'ellipsis',
             display: '-webkit-box',
             WebkitLineClamp: 2,
-            WebkitBoxOrient: 'vertical'
+            WebkitBoxOrient: 'vertical',
+            color: 'var(--text-color)'
           }} title={book.title}>
             {book.title}
           </h3>
           <p style={{
             fontSize: '0.85rem',
-            color: '#4B5563',
+            color: 'var(--text-color)',
+            opacity: 0.8,
             marginBottom: '1rem',
             whiteSpace: 'nowrap',
             overflow: 'hidden',
@@ -219,7 +222,7 @@ export const BookCard: React.FC<BookCardProps> = ({ book, onRefresh }) => {
         marginTop: 'auto',
         display: 'flex',
         borderTop: 'var(--border-width) solid var(--border-color)',
-        backgroundColor: '#FFFFFF'
+        backgroundColor: 'var(--card-bg)'
       }}>
         <Link
           to={`/books/${book.id}`}

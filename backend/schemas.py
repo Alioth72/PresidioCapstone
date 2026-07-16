@@ -131,6 +131,7 @@ class LoanDetailResponse(LoanResponse):
     """Loan with nested book and user info for admin views."""
     book_title: str
     book_author: str
+    book_category: str
     username: str
 
     class Config:

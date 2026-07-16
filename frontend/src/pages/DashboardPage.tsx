@@ -3,13 +3,35 @@ import axios from 'axios';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { loansApi, authApi } from '../api';
 import { useStore } from '../store';
-import { RefreshCw, CheckCircle, Clock, ShieldAlert, ArrowLeftRight, Users, Shield } from 'lucide-react';
+import { RefreshCw, CheckCircle, Clock, ShieldAlert, ArrowLeftRight, Users, Shield, BarChart3 } from 'lucide-react';
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend,
+  ArcElement
+} from 'chart.js';
+import { Bar, Doughnut } from 'react-chartjs-2';
+
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend,
+  ArcElement
+);
+
 
 export const DashboardPage: React.FC = () => {
   const { user, showToast } = useStore();
   const queryClient = useQueryClient();
   const [filterMode, setFilterMode] = useState<'all' | 'active' | 'overdue'>('all');
-  const [activeTab, setActiveTab] = useState<'loans' | 'permissions'>('loans');
+  const [activeTab, setActiveTab] = useState<'loans' | 'permissions' | 'analytics'>('loans');
 
   const { data: loans = [], isLoading, refetch } = useQuery({
     queryKey: ['loans', user?.role],
@@ -72,6 +94,84 @@ export const DashboardPage: React.FC = () => {
   const activeLoansCount = loans.filter(l => l.is_active).length;
   const overdueLoansCount = loans.filter(l => l.is_active && l.is_overdue).length;
 
+  // ─── Analytics Computations ───
+  const categoryCounts: Record<string, number> = {};
+  loans.forEach((l) => {
+    const cat = l.book_category || 'Uncategorized';
+    categoryCounts[cat] = (categoryCounts[cat] || 0) + 1;
+  });
+
+  const barChartData = {
+    labels: Object.keys(categoryCounts),
+    datasets: [
+      {
+        label: 'Number of Borrows',
+        data: Object.values(categoryCounts),
+        backgroundColor: '#FDE047', // var(--primary)
+        borderColor: '#000000',
+        borderWidth: 2,
+        borderRadius: 0,
+      },
+    ],
+  };
+
+  const barChartOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        labels: {
+          color: 'var(--text-color)',
+          font: { family: 'Outfit, sans-serif', weight: 800, size: 12 },
+        },
+      },
+    },
+    scales: {
+      x: {
+        grid: { color: 'rgba(156, 163, 175, 0.15)' },
+        ticks: { color: 'var(--text-color)', font: { family: 'Outfit, sans-serif', weight: 700 } },
+      },
+      y: {
+        grid: { color: 'rgba(156, 163, 175, 0.15)' },
+        ticks: { color: 'var(--text-color)', font: { family: 'Outfit, sans-serif', weight: 700 }, stepSize: 1 },
+      },
+    },
+  };
+
+  const activeCount = loans.filter((l) => l.is_active && !l.is_overdue).length;
+  const overdueCount = loans.filter((l) => l.is_active && l.is_overdue).length;
+  const returnedCount = loans.filter((l) => !l.is_active).length;
+
+  const doughnutChartData = {
+    labels: ['Active Loans', 'Overdue Loans', 'Returned Loans'],
+    datasets: [
+      {
+        data: [activeCount, overdueCount, returnedCount],
+        backgroundColor: [
+          '#FACC15', // Active
+          '#F87171', // Overdue
+          '#A78BFA', // Returned
+        ],
+        borderColor: '#000000',
+        borderWidth: 2,
+      },
+    ],
+  };
+
+  const doughnutChartOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        position: 'bottom' as const,
+        labels: {
+          color: 'var(--text-color)',
+          font: { family: 'Outfit, sans-serif', weight: 800, size: 12 },
+        },
+      },
+    },
+  };
+
   if (isLoading) {
     return (
       <div style={{ textAlign: 'center', padding: '6rem 0' }}>
@@ -82,7 +182,7 @@ export const DashboardPage: React.FC = () => {
           border: '5px solid var(--primary)',
           borderTopColor: 'transparent',
           animation: 'spin 1s linear infinite',
-          boxShadow: '2px 2px 0px #000000'
+          boxShadow: '2px 2px 0px var(--border-color)'
         }} />
         <p style={{ marginTop: '1rem', fontWeight: 700 }}>LOADING DASHBOARD...</p>
       </div>
@@ -101,10 +201,10 @@ export const DashboardPage: React.FC = () => {
         marginBottom: '2rem'
       }}>
         <div>
-          <h1 style={{ margin: 0, fontSize: '2.5rem', fontFamily: 'var(--font-heading)' }}>
+          <h1 style={{ margin: 0, fontSize: '2.5rem', fontFamily: 'var(--font-heading)', color: 'var(--text-color)' }}>
             {user?.role === 'admin' ? 'ADMIN LOAN OVERSIGHT' : 'MY LIBRARY DASHBOARD'}
           </h1>
-          <p style={{ color: '#4B5563', fontWeight: 500, marginTop: '0.25rem' }}>
+          <p style={{ color: 'var(--text-color)', opacity: 0.8, fontWeight: 500, marginTop: '0.25rem' }}>
             {user?.role === 'admin' 
               ? 'Monitor book checkouts, track due dates, and resolve member loans.' 
               : 'View your currently borrowed titles, due dates, and borrow history.'}
@@ -124,7 +224,7 @@ export const DashboardPage: React.FC = () => {
         <div style={{
           display: 'flex',
           gap: '1rem',
-          borderBottom: '3px solid #000000',
+          borderBottom: '3px solid var(--border-color)',
           marginBottom: '2rem',
           paddingBottom: '0.5rem'
         }}>
@@ -137,8 +237,9 @@ export const DashboardPage: React.FC = () => {
               gap: '0.5rem',
               padding: '0.5rem 1rem',
               fontWeight: 800,
-              backgroundColor: activeTab === 'loans' ? 'var(--primary)' : '#FFFFFF',
-              boxShadow: activeTab === 'loans' ? '2px 2px 0px #000000' : 'none'
+              backgroundColor: activeTab === 'loans' ? 'var(--primary)' : 'var(--card-bg)',
+              boxShadow: activeTab === 'loans' ? '2px 2px 0px var(--border-color)' : 'none',
+              color: 'var(--text-color)'
             }}
           >
             <ArrowLeftRight size={16} /> LOAN TRANSACTIONS
@@ -152,16 +253,33 @@ export const DashboardPage: React.FC = () => {
               gap: '0.5rem',
               padding: '0.5rem 1rem',
               fontWeight: 800,
-              backgroundColor: activeTab === 'permissions' ? 'var(--primary)' : '#FFFFFF',
-              boxShadow: activeTab === 'permissions' ? '2px 2px 0px #000000' : 'none'
+              backgroundColor: activeTab === 'permissions' ? 'var(--primary)' : 'var(--card-bg)',
+              boxShadow: activeTab === 'permissions' ? '2px 2px 0px var(--border-color)' : 'none',
+              color: 'var(--text-color)'
             }}
           >
             <Users size={16} /> MANAGE PERMISSIONS
           </button>
+          <button
+            onClick={() => setActiveTab('analytics')}
+            className="brut-btn"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.5rem',
+              padding: '0.5rem 1rem',
+              fontWeight: 800,
+              backgroundColor: activeTab === 'analytics' ? 'var(--primary)' : 'var(--card-bg)',
+              boxShadow: activeTab === 'analytics' ? '2px 2px 0px var(--border-color)' : 'none',
+              color: 'var(--text-color)'
+            }}
+          >
+            <BarChart3 size={16} /> SYSTEM ANALYTICS
+          </button>
         </div>
       )}
 
-      {user?.role === 'admin' && activeTab === 'permissions' ? (
+      {user?.role === 'admin' && activeTab === 'permissions' && (
         isUsersLoading ? (
           <div style={{ textAlign: 'center', padding: '3rem 0' }}>
             <div style={{
@@ -171,26 +289,27 @@ export const DashboardPage: React.FC = () => {
               border: '4px solid var(--primary)',
               borderTopColor: 'transparent',
               animation: 'spin 1s linear infinite',
-              boxShadow: '2px 2px 0px #000000'
+              boxShadow: '2px 2px 0px var(--border-color)'
             }} />
-            <p style={{ marginTop: '1rem', fontWeight: 700 }}>LOADING USERS...</p>
+            <p style={{ marginTop: '1rem', fontWeight: 700, color: 'var(--text-color)' }}>LOADING USERS...</p>
           </div>
         ) : (
           <div style={{
             border: 'var(--border-width) solid var(--border-color)',
-            boxShadow: '4px 4px 0px #000000',
+            boxShadow: '4px 4px 0px var(--border-color)',
             overflowX: 'auto',
-            backgroundColor: '#FFFFFF'
+            backgroundColor: 'var(--card-bg)'
           }}>
             <table style={{
               width: '100%',
               borderCollapse: 'collapse',
               textAlign: 'left',
-              fontSize: '0.9rem'
+              fontSize: '0.9rem',
+              color: 'var(--text-color)'
             }}>
               <thead>
                 <tr style={{
-                  backgroundColor: '#FAF7F2',
+                  backgroundColor: 'var(--bg-color)',
                   borderBottom: 'var(--border-width) solid var(--border-color)'
                 }}>
                   <th style={{ padding: '1rem', fontWeight: 800 }}>USERNAME</th>
@@ -204,7 +323,7 @@ export const DashboardPage: React.FC = () => {
                 {users.map((u) => {
                   const isSelf = u.id === user?.id;
                   return (
-                    <tr key={u.id} style={{ borderBottom: '2px solid #E5E7EB' }}>
+                    <tr key={u.id} style={{ borderBottom: '1.5px solid var(--border-color)' }}>
                       <td style={{ padding: '1rem', fontWeight: 700 }}>{u.username}</td>
                       <td style={{ padding: '1rem' }}>{u.full_name || 'N/A'}</td>
                       <td style={{ padding: '1rem' }}>{u.email}</td>
@@ -214,11 +333,12 @@ export const DashboardPage: React.FC = () => {
                           alignItems: 'center',
                           gap: '0.25rem',
                           backgroundColor: u.role === 'admin' ? 'var(--accent)' : 'var(--primary)',
-                          border: '1.5px solid #000000',
+                          border: '1.5px solid var(--border-color)',
+                          color: '#000000',
                           padding: '0.2rem 0.5rem',
                           fontSize: '0.75rem',
                           fontWeight: 800,
-                          boxShadow: '1px 1px 0px #000000',
+                          boxShadow: '1px 1px 0px var(--border-color)',
                           textTransform: 'uppercase'
                         }}>
                           {u.role === 'admin' && <Shield size={12} />}
@@ -241,9 +361,10 @@ export const DashboardPage: React.FC = () => {
                             style={{
                               padding: '0.3rem 0.6rem',
                               fontSize: '0.75rem',
-                              backgroundColor: u.role === 'admin' ? '#FCA5A5' : '#86EFAC',
-                              boxShadow: '1.5px 1.5px 0px #000000',
-                              cursor: changeRoleMutation.isPending ? 'not-allowed' : 'pointer'
+                              backgroundColor: u.role === 'admin' ? 'var(--accent)' : '#86EFAC',
+                              boxShadow: '1.5px 1.5px 0px var(--border-color)',
+                              cursor: changeRoleMutation.isPending ? 'not-allowed' : 'pointer',
+                              color: '#000000'
                             }}
                           >
                             {u.role === 'admin' ? 'DEMOTE TO MEMBER' : 'PROMOTE TO ADMIN'}
@@ -257,7 +378,45 @@ export const DashboardPage: React.FC = () => {
             </table>
           </div>
         )
-      ) : (
+      )}
+
+      {user?.role === 'admin' && activeTab === 'analytics' && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
+            gap: '2rem'
+          }}>
+            <div className="brut-card" style={{ backgroundColor: 'var(--card-bg)', height: '400px', display: 'flex', flexDirection: 'column' }}>
+              <h2 style={{ fontFamily: 'var(--font-heading)', fontWeight: 800, fontSize: '1.25rem', marginBottom: '1rem', textTransform: 'uppercase', color: 'var(--text-color)' }}>
+                Borrows By Category
+              </h2>
+              <div style={{ flex: 1, position: 'relative' }}>
+                {loans.length === 0 ? (
+                  <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%', color: '#6B7280', fontWeight: 600 }}>No loan transactions found.</div>
+                ) : (
+                  <Bar data={barChartData} options={barChartOptions} />
+                )}
+              </div>
+            </div>
+
+            <div className="brut-card" style={{ backgroundColor: 'var(--card-bg)', height: '400px', display: 'flex', flexDirection: 'column' }}>
+              <h2 style={{ fontFamily: 'var(--font-heading)', fontWeight: 800, fontSize: '1.25rem', marginBottom: '1rem', textTransform: 'uppercase', color: 'var(--text-color)' }}>
+                Loan Status Distribution
+              </h2>
+              <div style={{ flex: 1, position: 'relative' }}>
+                {loans.length === 0 ? (
+                  <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%', color: '#6B7280', fontWeight: 600 }}>No loan transactions found.</div>
+                ) : (
+                  <Doughnut data={doughnutChartData} options={doughnutChartOptions} />
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {((user?.role !== 'admin') || (user?.role === 'admin' && activeTab === 'loans')) && (
         <>
           {/* Stats row */}
           <div style={{
@@ -266,208 +425,214 @@ export const DashboardPage: React.FC = () => {
             gap: '1.5rem',
             marginBottom: '2.5rem'
           }}>
-        {/* Total checkouts card */}
-        <div className="brut-card" style={{ backgroundColor: 'var(--secondary)', display: 'flex', alignItems: 'center', gap: '1rem' }}>
-          <div style={{ backgroundColor: '#FFFFFF', border: '2px solid #000000', padding: '0.75rem', display: 'flex' }}>
-            <ArrowLeftRight size={24} />
-          </div>
-          <div>
-            <span style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', opacity: 0.8 }}>Total Transactions</span>
-            <span style={{ fontSize: '1.75rem', fontWeight: 900 }}>{loans.length}</span>
-          </div>
-        </div>
+            {/* Total checkouts card */}
+            <div className="brut-card" style={{ backgroundColor: 'var(--secondary)', display: 'flex', alignItems: 'center', gap: '1rem', color: '#000000' }}>
+              <div style={{ backgroundColor: '#FFFFFF', border: '2px solid #000000', padding: '0.75rem', display: 'flex' }}>
+                <ArrowLeftRight size={24} />
+              </div>
+              <div>
+                <span style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', opacity: 0.8 }}>Total Transactions</span>
+                <span style={{ fontSize: '1.75rem', fontWeight: 900 }}>{loans.length}</span>
+              </div>
+            </div>
 
-        {/* Active checkouts card */}
-        <div className="brut-card" style={{ backgroundColor: 'var(--primary)', display: 'flex', alignItems: 'center', gap: '1rem' }}>
-          <div style={{ backgroundColor: '#FFFFFF', border: '2px solid #000000', padding: '0.75rem', display: 'flex' }}>
-            <Clock size={24} />
-          </div>
-          <div>
-            <span style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', opacity: 0.8 }}>Active Loans</span>
-            <span style={{ fontSize: '1.75rem', fontWeight: 900 }}>{activeLoansCount}</span>
-          </div>
-        </div>
+            {/* Active checkouts card */}
+            <div className="brut-card" style={{ backgroundColor: 'var(--primary)', display: 'flex', alignItems: 'center', gap: '1rem', color: '#000000' }}>
+              <div style={{ backgroundColor: '#FFFFFF', border: '2px solid #000000', padding: '0.75rem', display: 'flex' }}>
+                <Clock size={24} />
+              </div>
+              <div>
+                <span style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', opacity: 0.8 }}>Active Loans</span>
+                <span style={{ fontSize: '1.75rem', fontWeight: 900 }}>{activeLoansCount}</span>
+              </div>
+            </div>
 
-        {/* Overdue checkouts card */}
-        <div className="brut-card" style={{ 
-          backgroundColor: overdueLoansCount > 0 ? 'var(--accent)' : '#E5E7EB', 
-          display: 'flex', 
-          alignItems: 'center', 
-          gap: '1rem' 
-        }}>
-          <div style={{ backgroundColor: '#FFFFFF', border: '2px solid #000000', padding: '0.75rem', display: 'flex' }}>
-            <ShieldAlert size={24} color={overdueLoansCount > 0 ? '#DC2626' : '#000000'} />
+            {/* Overdue checkouts card */}
+            <div className="brut-card" style={{ 
+              backgroundColor: overdueLoansCount > 0 ? 'var(--accent)' : '#E5E7EB', 
+              display: 'flex', 
+              alignItems: 'center', 
+              gap: '1rem',
+              color: '#000000'
+            }}>
+              <div style={{ backgroundColor: '#FFFFFF', border: '2px solid #000000', padding: '0.75rem', display: 'flex' }}>
+                <ShieldAlert size={24} color={overdueLoansCount > 0 ? '#DC2626' : '#000000'} />
+              </div>
+              <div>
+                <span style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', opacity: 0.8 }}>Overdue Loans</span>
+                <span style={{ fontSize: '1.75rem', fontWeight: 900, color: overdueLoansCount > 0 ? '#DC2626' : '#000000' }}>
+                  {overdueLoansCount}
+                </span>
+              </div>
+            </div>
           </div>
-          <div>
-            <span style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', opacity: 0.8 }}>Overdue Loans</span>
-            <span style={{ fontSize: '1.75rem', fontWeight: 900, color: overdueLoansCount > 0 ? '#DC2626' : '#000000' }}>
-              {overdueLoansCount}
-            </span>
-          </div>
-        </div>
-      </div>
 
-      {/* Filter Mode Buttons (mainly for Admins, but also nice for Members) */}
-      <div style={{
-        display: 'flex',
-        gap: '0.5rem',
-        marginBottom: '1.5rem',
-        flexWrap: 'wrap'
-      }}>
-        <button
-          onClick={() => setFilterMode('all')}
-          className="brut-btn"
-          style={{
-            padding: '0.4rem 1rem',
-            fontSize: '0.85rem',
-            backgroundColor: filterMode === 'all' ? 'var(--primary)' : '#FFFFFF',
-            boxShadow: '2px 2px 0px #000000'
-          }}
-        >
-          ALL LOANS
-        </button>
-        <button
-          onClick={() => setFilterMode('active')}
-          className="brut-btn"
-          style={{
-            padding: '0.4rem 1rem',
-            fontSize: '0.85rem',
-            backgroundColor: filterMode === 'active' ? 'var(--primary)' : '#FFFFFF',
-            boxShadow: '2px 2px 0px #000000'
-          }}
-        >
-          ACTIVE LOANS ({activeLoansCount})
-        </button>
-        <button
-          onClick={() => setFilterMode('overdue')}
-          className="brut-btn"
-          style={{
-            padding: '0.4rem 1rem',
-            fontSize: '0.85rem',
-            backgroundColor: filterMode === 'overdue' ? 'var(--primary)' : '#FFFFFF',
-            boxShadow: '2px 2px 0px #000000',
-            color: overdueLoansCount > 0 ? '#DC2626' : '#000000'
-          }}
-        >
-          OVERDUE LOANS ({overdueLoansCount})
-        </button>
-      </div>
-
-      {/* Loans List Table / Cards */}
-      {filteredLoans.length === 0 ? (
-        <div style={{
-          textAlign: 'center',
-          padding: '3rem 1rem',
-          border: '3px dashed #000000',
-          backgroundColor: '#FFFFFF'
-        }}>
-          <CheckCircle size={40} style={{ margin: '0 auto 1rem auto', color: '#9CA3AF' }} />
-          <h3 style={{ margin: 0, fontSize: '1.4rem' }}>No loans found</h3>
-          <p style={{ color: '#4B5563', marginTop: '0.25rem' }}>No records match the current filter selection.</p>
-        </div>
-      ) : (
-        <div style={{
-          border: 'var(--border-width) solid var(--border-color)',
-          boxShadow: '4px 4px 0px #000000',
-          overflowX: 'auto',
-          backgroundColor: '#FFFFFF'
-        }}>
-          <table style={{
-            width: '100%',
-            borderCollapse: 'collapse',
-            textAlign: 'left',
-            fontSize: '0.9rem'
+          {/* Filter Mode Buttons */}
+          <div style={{
+            display: 'flex',
+            gap: '0.5rem',
+            marginBottom: '1.5rem',
+            flexWrap: 'wrap'
           }}>
-            <thead>
-              <tr style={{
-                backgroundColor: '#FAF7F2',
-                borderBottom: 'var(--border-width) solid var(--border-color)'
-              }}>
-                {user?.role === 'admin' && <th style={{ padding: '1rem', fontWeight: 800 }}>MEMBER</th>}
-                <th style={{ padding: '1rem', fontWeight: 800 }}>BOOK TITLE</th>
-                <th style={{ padding: '1rem', fontWeight: 800 }}>BORROWED DATE</th>
-                <th style={{ padding: '1rem', fontWeight: 800 }}>DUE DATE</th>
-                <th style={{ padding: '1rem', fontWeight: 800 }}>STATUS</th>
-                <th style={{ padding: '1rem', fontWeight: 800 }}>ACTION</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredLoans.map((loan) => {
-                let statusBg = '#E5E7EB';
-                let statusText = 'Returned';
-                let statusColor = '#000000';
-                
-                if (loan.is_active) {
-                  if (loan.is_overdue) {
-                    statusBg = 'var(--accent)';
-                    statusText = 'OVERDUE';
-                    statusColor = '#DC2626';
-                  } else {
-                    statusBg = 'var(--primary)';
-                    statusText = 'Active';
-                  }
-                }
+            <button
+              onClick={() => setFilterMode('all')}
+              className="brut-btn"
+              style={{
+                padding: '0.4rem 1rem',
+                fontSize: '0.85rem',
+                backgroundColor: filterMode === 'all' ? 'var(--primary)' : 'var(--card-bg)',
+                boxShadow: '2px 2px 0px var(--border-color)',
+                color: 'var(--text-color)'
+              }}
+            >
+              ALL LOANS
+            </button>
+            <button
+              onClick={() => setFilterMode('active')}
+              className="brut-btn"
+              style={{
+                padding: '0.4rem 1rem',
+                fontSize: '0.85rem',
+                backgroundColor: filterMode === 'active' ? 'var(--primary)' : 'var(--card-bg)',
+                boxShadow: '2px 2px 0px var(--border-color)',
+                color: 'var(--text-color)'
+              }}
+            >
+              ACTIVE LOANS ({activeLoansCount})
+            </button>
+            <button
+              onClick={() => setFilterMode('overdue')}
+              className="brut-btn"
+              style={{
+                padding: '0.4rem 1rem',
+                fontSize: '0.85rem',
+                backgroundColor: filterMode === 'overdue' ? 'var(--primary)' : 'var(--card-bg)',
+                boxShadow: '2px 2px 0px var(--border-color)',
+                color: overdueLoansCount > 0 ? '#DC2626' : 'var(--text-color)'
+              }}
+            >
+              OVERDUE LOANS ({overdueLoansCount})
+            </button>
+          </div>
 
-                return (
-                  <tr key={loan.id} style={{
-                    borderBottom: '2px solid #E5E7EB'
+          {/* Loans List Table / Cards */}
+          {filteredLoans.length === 0 ? (
+            <div style={{
+              textAlign: 'center',
+              padding: '3rem 1rem',
+              border: '3px dashed var(--border-color)',
+              backgroundColor: 'var(--card-bg)',
+              color: 'var(--text-color)'
+            }}>
+              <CheckCircle size={40} style={{ margin: '0 auto 1rem auto', color: '#9CA3AF' }} />
+              <h3 style={{ margin: 0, fontSize: '1.4rem' }}>No loans found</h3>
+              <p style={{ color: '#6B7280', marginTop: '0.25rem' }}>No records match the current filter selection.</p>
+            </div>
+          ) : (
+            <div style={{
+              border: 'var(--border-width) solid var(--border-color)',
+              boxShadow: '4px 4px 0px var(--border-color)',
+              overflowX: 'auto',
+              backgroundColor: 'var(--card-bg)'
+            }}>
+              <table style={{
+                width: '100%',
+                borderCollapse: 'collapse',
+                textAlign: 'left',
+                fontSize: '0.9rem',
+                color: 'var(--text-color)'
+              }}>
+                <thead>
+                  <tr style={{
+                    backgroundColor: 'var(--bg-color)',
+                    borderBottom: 'var(--border-width) solid var(--border-color)'
                   }}>
-                    {user?.role === 'admin' && (
-                      <td style={{ padding: '1rem', fontWeight: 700 }}>
-                        {loan.username}
-                      </td>
-                    )}
-                    <td style={{ padding: '1rem' }}>
-                      <div style={{ fontWeight: 700 }}>{loan.book_title}</div>
-                      <div style={{ fontSize: '0.75rem', color: '#6B7280' }}>by {loan.book_author}</div>
-                    </td>
-                    <td style={{ padding: '1rem' }}>
-                      {new Date(loan.borrowed_at).toLocaleDateString()}
-                    </td>
-                    <td style={{ padding: '1rem' }}>
-                      {new Date(loan.due_date).toLocaleDateString()}
-                    </td>
-                    <td style={{ padding: '1rem' }}>
-                      <span style={{
-                        backgroundColor: statusBg,
-                        color: statusColor,
-                        border: '1.5px solid #000000',
-                        padding: '0.2rem 0.5rem',
-                        fontSize: '0.75rem',
-                        fontWeight: 800,
-                        boxShadow: '1px 1px 0px #000000',
-                        textTransform: 'uppercase'
-                      }}>
-                        {statusText}
-                      </span>
-                    </td>
-                    <td style={{ padding: '1rem' }}>
-                      {loan.is_active ? (
-                        <button
-                          onClick={() => handleReturn(loan.id, loan.book_title)}
-                          className="brut-btn"
-                          style={{
-                            padding: '0.3rem 0.6rem',
-                            fontSize: '0.75rem',
-                            backgroundColor: '#86EFAC',
-                            boxShadow: '1.5px 1.5px 0px #000000'
-                          }}
-                        >
-                          {user?.role === 'admin' ? 'FORCE RETURN' : 'RETURN BOOK'}
-                        </button>
-                      ) : (
-                        <span style={{ fontSize: '0.8rem', color: '#6B7280', fontStyle: 'italic' }}>
-                          Returned on {loan.returned_at ? new Date(loan.returned_at).toLocaleDateString() : 'N/A'}
-                        </span>
-                      )}
-                    </td>
+                    {user?.role === 'admin' && <th style={{ padding: '1rem', fontWeight: 800 }}>MEMBER</th>}
+                    <th style={{ padding: '1rem', fontWeight: 800 }}>BOOK TITLE</th>
+                    <th style={{ padding: '1rem', fontWeight: 800 }}>BORROWED DATE</th>
+                    <th style={{ padding: '1rem', fontWeight: 800 }}>DUE DATE</th>
+                    <th style={{ padding: '1rem', fontWeight: 800 }}>STATUS</th>
+                    <th style={{ padding: '1rem', fontWeight: 800 }}>ACTION</th>
                   </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
-      )}
+                </thead>
+                <tbody>
+                  {filteredLoans.map((loan) => {
+                    let statusBg = '#E5E7EB';
+                    let statusText = 'Returned';
+                    let statusColor = '#000000';
+                    
+                    if (loan.is_active) {
+                      if (loan.is_overdue) {
+                        statusBg = 'var(--accent)';
+                        statusText = 'OVERDUE';
+                        statusColor = '#DC2626';
+                      } else {
+                        statusBg = 'var(--primary)';
+                        statusText = 'Active';
+                      }
+                    }
+
+                    return (
+                      <tr key={loan.id} style={{
+                        borderBottom: '1.5px solid var(--border-color)'
+                      }}>
+                        {user?.role === 'admin' && (
+                          <td style={{ padding: '1rem', fontWeight: 700 }}>
+                            {loan.username}
+                          </td>
+                        )}
+                        <td style={{ padding: '1rem' }}>
+                          <div style={{ fontWeight: 700 }}>{loan.book_title}</div>
+                          <div style={{ fontSize: '0.75rem', color: '#6B7280' }}>by {loan.book_author}</div>
+                        </td>
+                        <td style={{ padding: '1rem' }}>
+                          {new Date(loan.borrowed_at).toLocaleDateString()}
+                        </td>
+                        <td style={{ padding: '1rem' }}>
+                          {new Date(loan.due_date).toLocaleDateString()}
+                        </td>
+                        <td style={{ padding: '1rem' }}>
+                          <span style={{
+                            backgroundColor: statusBg,
+                            color: statusColor,
+                            border: '1.5px solid var(--border-color)',
+                            padding: '0.2rem 0.5rem',
+                            fontSize: '0.75rem',
+                            fontWeight: 800,
+                            boxShadow: '1px 1px 0px var(--border-color)',
+                            textTransform: 'uppercase'
+                          }}>
+                            {statusText}
+                          </span>
+                        </td>
+                        <td style={{ padding: '1rem' }}>
+                          {loan.is_active ? (
+                            <button
+                              onClick={() => handleReturn(loan.id, loan.book_title)}
+                              className="brut-btn"
+                              style={{
+                                padding: '0.3rem 0.6rem',
+                                fontSize: '0.75rem',
+                                backgroundColor: '#86EFAC',
+                                boxShadow: '1.5px 1.5px 0px var(--border-color)',
+                                color: '#000000'
+                              }}
+                            >
+                              {user?.role === 'admin' ? 'FORCE RETURN' : 'RETURN BOOK'}
+                            </button>
+                          ) : (
+                            <span style={{ fontSize: '0.8rem', color: '#6B7280', fontStyle: 'italic' }}>
+                              Returned on {loan.returned_at ? new Date(loan.returned_at).toLocaleDateString() : 'N/A'}
+                            </span>
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
         </>
       )}
     </div>

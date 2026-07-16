@@ -65,6 +65,7 @@ export interface Loan {
   is_overdue: boolean;
   book_title: string;
   book_author: string;
+  book_category: string;
   username: string;
 }
 

@@ -99,8 +99,9 @@ export const LoginPage: React.FC = () => {
       <div className="brut-card" style={{
         width: '450px',
         maxWidth: '100%',
-        backgroundColor: '#FFFFFF',
-        boxShadow: '8px 8px 0px #000000',
+        backgroundColor: 'var(--card-bg)',
+        boxShadow: '8px 8px 0px var(--border-color)',
+        color: 'var(--text-color)',
         padding: '2.5rem'
       }}>
         {/* Header Icon */}
@@ -115,7 +116,7 @@ export const LoginPage: React.FC = () => {
             padding: '1rem',
             borderRadius: '0%',
             transform: 'rotate(-4deg)',
-            boxShadow: '4px 4px 0px #000000',
+            boxShadow: '4px 4px 0px var(--border-color)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center'
@@ -254,7 +255,8 @@ export const LoginPage: React.FC = () => {
               style={{
                 background: 'none',
                 border: 'none',
-                color: '#4B5563',
+                color: 'var(--text-color)',
+                opacity: 0.8,
                 fontSize: '0.9rem',
                 cursor: 'pointer',
                 fontWeight: 600,

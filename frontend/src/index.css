@@ -221,3 +221,41 @@ h3 {
     opacity: 1;
   }
 }
+
+/* Dark Mode Override */
+[data-theme="dark"] {
+  --bg-color: #07070A;       /* Midnight obsidian */
+  --text-color: #F3F4F6;     /* Saturated off-white */
+  --border-color: #F3F4F6;
+  --card-bg: #121217;        /* Carbon/Deep charcoal card bg */
+  
+  --primary: #FDE047;        /* Canary Yellow */
+  --primary-hover: #FACC15;
+  --secondary: #D8B4FE;      /* Soft Lavender */
+  --secondary-hover: #C084FC;
+  --accent: #FDA4AF;         /* Soft Peach/Salmon */
+  --accent-hover: #F87171;
+
+  --success: #34D399;
+  --error: #F87171;
+  --info: #60A5FA;
+}
+
+[data-theme="dark"] .brut-btn-flat:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="dark"] .brut-btn:disabled {
+  background-color: #374151;
+  color: #6B7280;
+}
+
+[data-theme="dark"] .brut-input-select {
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+}
+
+/* Ensure smooth transitions when switching themes */
+body, .brut-card, .brut-btn, .brut-input, navbar, header, footer, div, section, button, input, select, textarea {
+  transition: background-color 0.25s ease, color 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+}
+

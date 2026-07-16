@@ -21,7 +21,8 @@ const ProtectedRoute: React.FC = () => {
         flexDirection: 'column',
         justifyContent: 'center',
         alignItems: 'center',
-        backgroundColor: '#F4F0EA'
+        backgroundColor: 'var(--bg-color)',
+        color: 'var(--text-color)'
       }}>
         <div style={{
           width: '50px',
@@ -29,7 +30,7 @@ const ProtectedRoute: React.FC = () => {
           border: '5px solid var(--primary)',
           borderTopColor: 'transparent',
           animation: 'spin 1s linear infinite',
-          boxShadow: '4px 4px 0px #000000'
+          boxShadow: '4px 4px 0px var(--border-color)'
         }} />
         <p style={{ marginTop: '1.5rem', fontWeight: 900, fontFamily: 'var(--font-heading)' }}>VALIDATING SESSION...</p>
       </div>
@@ -64,7 +65,7 @@ const App: React.FC = () => {
 
   return (
     <BrowserRouter>
-      <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', backgroundColor: '#F4F0EA' }}>
+      <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', backgroundColor: 'var(--bg-color)', color: 'var(--text-color)' }}>
         <React.Suspense fallback={
           <div style={{
             height: '100vh',
@@ -72,7 +73,8 @@ const App: React.FC = () => {
             flexDirection: 'column',
             justifyContent: 'center',
             alignItems: 'center',
-            backgroundColor: '#F4F0EA'
+            backgroundColor: 'var(--bg-color)',
+            color: 'var(--text-color)'
           }}>
             <div style={{
               width: '50px',
@@ -80,7 +82,7 @@ const App: React.FC = () => {
               border: '5px solid var(--primary)',
               borderTopColor: 'transparent',
               animation: 'spin 1s linear infinite',
-              boxShadow: '4px 4px 0px #000000'
+              boxShadow: '4px 4px 0px var(--border-color)'
             }} />
             <p style={{ marginTop: '1.5rem', fontWeight: 900, fontFamily: 'var(--font-heading)' }}>LOADING PAGE...</p>
           </div>

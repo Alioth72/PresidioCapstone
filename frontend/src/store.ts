@@ -7,6 +7,7 @@ interface AuthState {
   isAuthenticated: boolean;
   checkingAuth: boolean;
   notification: { message: string; type: 'success' | 'error' | 'info' } | null;
+  theme: 'light' | 'dark';
   
   // Actions
   showToast: (message: string, type?: 'success' | 'error' | 'info') => void;
@@ -14,13 +15,19 @@ interface AuthState {
   login: (username: string, password: string) => Promise<void>;
   logout: (username?: string) => Promise<void>;
   checkAuth: () => Promise<void>;
+  toggleTheme: () => void;
 }
+
+// Read and apply initial theme immediately on boot to prevent flash
+const initialTheme = (localStorage.getItem('theme') as 'light' | 'dark') || 'light';
+document.documentElement.setAttribute('data-theme', initialTheme);
 
 export const useStore = create<AuthState>((set, get) => ({
   user: null,
   isAuthenticated: false,
   checkingAuth: true,
   notification: null,
+  theme: initialTheme,
 
   showToast: (message, type = 'info') => {
     set({ notification: { message, type } });
@@ -66,4 +73,12 @@ export const useStore = create<AuthState>((set, get) => ({
       set({ user: null, isAuthenticated: false, checkingAuth: false });
     }
   },
+
+  toggleTheme: () => {
+    const nextTheme = get().theme === 'light' ? 'dark' : 'light';
+    set({ theme: nextTheme });
+    localStorage.setItem('theme', nextTheme);
+    document.documentElement.setAttribute('data-theme', nextTheme);
+  },
 }));
+

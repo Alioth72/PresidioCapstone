@@ -211,7 +211,7 @@ export const BookDetailPage: React.FC = () => {
         alignItems: 'center',
         gap: '0.4rem',
         textDecoration: 'none',
-        color: '#000000',
+        color: 'var(--text-color)',
         fontWeight: 700,
         marginBottom: '1.5rem',
         fontSize: '0.9rem'
@@ -227,22 +227,22 @@ export const BookDetailPage: React.FC = () => {
       }}>
         {/* Left Column: Cover Placeholder */}
         <div className="brut-card" style={{
-          backgroundColor: '#FFFFFF',
+          backgroundColor: 'var(--card-bg)',
           padding: '1.5rem',
           display: 'flex',
           justifyContent: 'center',
           alignItems: 'center',
           flexDirection: 'column',
-          boxShadow: '6px 6px 0px #000000'
+          boxShadow: '6px 6px 0px var(--border-color)'
         }}>
           <div style={{
             width: '100%',
             height: '420px',
-            backgroundColor: '#F3F4F6',
+            backgroundColor: 'rgba(156, 163, 175, 0.1)',
             display: 'flex',
             justifyContent: 'center',
             alignItems: 'center',
-            border: '2px solid #000000',
+            border: '2.5px solid var(--border-color)',
             overflow: 'hidden',
             position: 'relative'
           }}>
@@ -271,8 +271,8 @@ export const BookDetailPage: React.FC = () => {
               textAlign: 'center'
             }}>
               <BookOpen size={72} strokeWidth={2.5} style={{ marginBottom: '1rem' }} />
-              <h2 style={{ fontSize: '1.5rem', margin: 0 }}>{book.title}</h2>
-              <p style={{ color: '#4B5563', marginTop: '0.5rem' }}>{book.author}</p>
+              <h2 style={{ fontSize: '1.5rem', margin: 0, color: 'var(--text-color)' }}>{book.title}</h2>
+              <p style={{ color: 'var(--text-color)', opacity: 0.8, marginTop: '0.5rem' }}>{book.author}</p>
             </div>
           </div>
 
@@ -280,18 +280,18 @@ export const BookDetailPage: React.FC = () => {
           <div style={{
             width: '100%',
             marginTop: '1.5rem',
-            border: '2px solid #000000',
+            border: '2.5px solid var(--border-color)',
             padding: '1rem',
-            backgroundColor: book.available_copies > 0 ? '#ECFDF5' : '#FEF2F2',
+            backgroundColor: 'var(--bg-color)',
             textAlign: 'center',
             fontWeight: 700
           }}>
             {book.available_copies > 0 ? (
-              <span style={{ color: '#047857' }}>
+              <span style={{ color: 'var(--success)' }}>
                 ✅ {book.available_copies} of {book.total_copies} COPIES AVAILABLE TO BORROW
               </span>
             ) : (
-              <span style={{ color: '#B91C1C' }}>
+              <span style={{ color: 'var(--accent)' }}>
                 ❌ OUT OF STOCK (All copies are currently loaned out)
               </span>
             )}
@@ -302,47 +302,48 @@ export const BookDetailPage: React.FC = () => {
         <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
           
           {/* Main Info Card */}
-          <div className="brut-card" style={{ backgroundColor: '#FFFFFF', padding: '2rem' }}>
+          <div className="brut-card" style={{ backgroundColor: 'var(--card-bg)', padding: '2rem' }}>
             {book.category && (
               <span style={{
                 backgroundColor: 'var(--secondary)',
-                border: '1.5px solid #000000',
+                border: '1.5px solid var(--border-color)',
+                color: '#000000',
                 padding: '0.2rem 0.6rem',
                 fontSize: '0.8rem',
                 fontWeight: 700,
                 display: 'inline-block',
                 marginBottom: '0.75rem',
-                boxShadow: '1.5px 1.5px 0px #000000'
+                boxShadow: '1.5px 1.5px 0px var(--border-color)'
               }}>
                 {book.category}
               </span>
             )}
 
-            <h1 style={{ fontSize: '2.5rem', margin: '0 0 0.5rem 0', lineHeight: 1.1 }}>
+            <h1 style={{ fontSize: '2.5rem', margin: '0 0 0.5rem 0', lineHeight: 1.1, color: 'var(--text-color)' }}>
               {book.title}
             </h1>
-            <p style={{ fontSize: '1.2rem', fontWeight: 600, color: '#4B5563', marginBottom: '1.25rem' }}>
+            <p style={{ fontSize: '1.2rem', fontWeight: 600, color: 'var(--text-color)', opacity: 0.8, marginBottom: '1.25rem' }}>
               by {book.author}
             </p>
 
             {/* Rating Stars Bar */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1.5rem', borderBottom: '2px solid #F3F4F6', paddingBottom: '1rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1.5rem', borderBottom: '2px solid var(--border-color)', paddingBottom: '1rem' }}>
               <div style={{ display: 'flex' }}>
                 {renderStars(book.average_rating, 20)}
               </div>
-              <span style={{ fontSize: '1.1rem', fontWeight: 800 }}>
+              <span style={{ fontSize: '1.1rem', fontWeight: 800, color: 'var(--text-color)' }}>
                 {book.average_rating ? book.average_rating.toFixed(1) : '0.0'}
               </span>
-              <span style={{ color: '#6B7280', fontSize: '0.9rem' }}>
+              <span style={{ color: 'var(--text-color)', opacity: 0.6, fontSize: '0.9rem' }}>
                 ({book.review_count} {book.review_count === 1 ? 'review' : 'reviews'})
               </span>
             </div>
 
             {/* Description Text */}
-            <h3 style={{ fontSize: '1.1rem', textTransform: 'uppercase', marginBottom: '0.5rem' }}>Description</h3>
+            <h3 style={{ fontSize: '1.1rem', textTransform: 'uppercase', marginBottom: '0.5rem', color: 'var(--text-color)' }}>Description</h3>
             <p style={{
               lineHeight: 1.6,
-              color: '#374151',
+              color: 'var(--text-color)',
               fontSize: '0.95rem',
               marginBottom: '1.5rem'
             }}>
@@ -355,20 +356,21 @@ export const BookDetailPage: React.FC = () => {
               gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
               gap: '1rem',
               marginBottom: '2rem',
-              backgroundColor: '#FAF7F2',
+              backgroundColor: 'var(--bg-color)',
               padding: '1rem',
-              border: '2px solid #000000'
+              border: '2.5px solid var(--border-color)',
+              color: 'var(--text-color)'
             }}>
               <div>
-                <span style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, color: '#6B7280', textTransform: 'uppercase' }}>ISBN</span>
+                <span style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-color)', opacity: 0.6, textTransform: 'uppercase' }}>ISBN</span>
                 <span style={{ fontWeight: 600, fontSize: '0.9rem' }}>{book.isbn || 'N/A'}</span>
               </div>
               <div>
-                <span style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, color: '#6B7280', textTransform: 'uppercase' }}>Publisher</span>
+                <span style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-color)', opacity: 0.6, textTransform: 'uppercase' }}>Publisher</span>
                 <span style={{ fontWeight: 600, fontSize: '0.9rem' }}>{book.publisher || 'N/A'}</span>
               </div>
               <div>
-                <span style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, color: '#6B7280', textTransform: 'uppercase' }}>Publication Year</span>
+                <span style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-color)', opacity: 0.6, textTransform: 'uppercase' }}>Publication Year</span>
                 <span style={{ fontWeight: 600, fontSize: '0.9rem' }}>{book.publication_year || 'N/A'}</span>
               </div>
             </div>
@@ -408,8 +410,8 @@ export const BookDetailPage: React.FC = () => {
           </div>
 
           {/* Reviews & Ratings Section */}
-          <div className="brut-card" style={{ backgroundColor: '#FFFFFF', padding: '2rem' }}>
-            <h2 style={{ fontSize: '1.6rem', marginBottom: '1.5rem', fontFamily: 'var(--font-heading)', borderBottom: '2.5px solid #000000', paddingBottom: '0.5rem' }}>
+          <div className="brut-card" style={{ backgroundColor: 'var(--card-bg)', padding: '2rem' }}>
+            <h2 style={{ fontSize: '1.6rem', marginBottom: '1.5rem', fontFamily: 'var(--font-heading)', borderBottom: '2.5px solid var(--border-color)', paddingBottom: '0.5rem', color: 'var(--text-color)' }}>
               REVIEWS
             </h2>
 
@@ -417,13 +419,14 @@ export const BookDetailPage: React.FC = () => {
             {user?.role === 'member' && (
               <div style={{
                 marginBottom: '2rem',
-                borderBottom: '2px dashed #000000',
+                borderBottom: '2px dashed var(--border-color)',
                 paddingBottom: '2rem'
               }}>
                 {hasReviewed ? (
                   <div style={{
-                    backgroundColor: '#EFF6FF',
+                    backgroundColor: 'rgba(59, 130, 246, 0.1)',
                     border: '2px solid #3B82F6',
+                    color: '#3B82F6',
                     padding: '1rem',
                     fontWeight: 700,
                     fontSize: '0.9rem',
@@ -431,15 +434,15 @@ export const BookDetailPage: React.FC = () => {
                     alignItems: 'center',
                     gap: '0.5rem'
                   }}>
-                    <CheckCircle size={18} color="#2563EB" /> You have already reviewed this book.
+                    <CheckCircle size={18} color="#3B82F6" /> You have already reviewed this book.
                   </div>
                 ) : (
                   <form onSubmit={handleReviewSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                    <h3 style={{ fontSize: '1.1rem', margin: 0 }}>Add a Review</h3>
+                    <h3 style={{ fontSize: '1.1rem', margin: 0, color: 'var(--text-color)' }}>Add a Review</h3>
                     
                     {/* Star selection */}
                     <div>
-                      <span style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, marginBottom: '0.3rem', textTransform: 'uppercase' }}>Rating</span>
+                      <span style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, marginBottom: '0.3rem', textTransform: 'uppercase', color: 'var(--text-color)' }}>Rating</span>
                       <div style={{ display: 'flex', gap: '0.4rem' }}>
                         {[1, 2, 3, 4, 5].map((num) => (
                           <button
@@ -447,8 +450,9 @@ export const BookDetailPage: React.FC = () => {
                             type="button"
                             onClick={() => setRating(num)}
                             style={{
-                              backgroundColor: num <= rating ? 'var(--primary)' : '#F3F4F6',
-                              border: '2px solid #000000',
+                              backgroundColor: num <= rating ? 'var(--primary)' : 'rgba(156, 163, 175, 0.2)',
+                              color: 'var(--text-color)',
+                              border: '2.5px solid var(--border-color)',
                               width: '36px',
                               height: '36px',
                               display: 'flex',
@@ -456,7 +460,7 @@ export const BookDetailPage: React.FC = () => {
                               alignItems: 'center',
                               fontWeight: 800,
                               cursor: 'pointer',
-                              boxShadow: '1.5px 1.5px 0px #000000'
+                              boxShadow: '1.5px 1.5px 0px var(--border-color)'
                             }}
                           >
                             {num}
@@ -467,7 +471,7 @@ export const BookDetailPage: React.FC = () => {
 
                     {/* Comment text area */}
                     <div>
-                      <span style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, marginBottom: '0.3rem', textTransform: 'uppercase' }}>Comment</span>
+                      <span style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, marginBottom: '0.3rem', textTransform: 'uppercase', color: 'var(--text-color)' }}>Comment</span>
                       <textarea
                         className="brut-input"
                         rows={3}
@@ -493,17 +497,18 @@ export const BookDetailPage: React.FC = () => {
 
             {/* Reviews List */}
             {reviews.length === 0 ? (
-              <p style={{ color: '#6B7280', fontStyle: 'italic', textAlign: 'center', padding: '1rem 0' }}>
+              <p style={{ color: 'var(--text-color)', opacity: 0.6, fontStyle: 'italic', textAlign: 'center', padding: '1rem 0' }}>
                 There are no reviews for this book yet.
               </p>
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                 {reviews.map((rev) => (
                   <div key={rev.id} style={{
-                    border: '2px solid #000000',
+                    border: '2.5px solid var(--border-color)',
                     padding: '1rem',
-                    backgroundColor: '#FAF7F2',
-                    boxShadow: '2px 2px 0px #000000'
+                    backgroundColor: 'var(--bg-color)',
+                    boxShadow: '2px 2px 0px var(--border-color)',
+                    color: 'var(--text-color)'
                   }}>
                     <div style={{
                       display: 'flex',
@@ -557,12 +562,13 @@ export const BookDetailPage: React.FC = () => {
             maxWidth: '95%',
             maxHeight: '90vh',
             overflowY: 'auto',
-            backgroundColor: '#FFFFFF',
-            boxShadow: '8px 8px 0px #000000',
+            backgroundColor: 'var(--card-bg)',
+            boxShadow: '8px 8px 0px var(--border-color)',
+            color: 'var(--text-color)',
             padding: '2rem'
           }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', borderBottom: '2.5px solid #000000', paddingBottom: '0.5rem' }}>
-              <h3 style={{ margin: 0, fontFamily: 'var(--font-heading)', textTransform: 'uppercase' }}>Edit Catalog Record</h3>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', borderBottom: '2.5px solid var(--border-color)', paddingBottom: '0.5rem' }}>
+              <h3 style={{ margin: 0, fontFamily: 'var(--font-heading)', textTransform: 'uppercase', color: 'var(--text-color)' }}>Edit Catalog Record</h3>
               <button
                 onClick={() => setShowEditModal(false)}
                 className="brut-btn brut-btn-flat"
