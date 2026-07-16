@@ -52,6 +52,10 @@ class UserResponse(BaseModel):
         from_attributes = True
 
 
+class UserUpdateRole(BaseModel):
+    role: UserRole
+
+
 class TokenResponse(BaseModel):
     access_token: str
     token_type: str = "bearer"

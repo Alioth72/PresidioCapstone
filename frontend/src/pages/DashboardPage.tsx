@@ -1,19 +1,42 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { loansApi } from '../api';
+import { loansApi, authApi } from '../api';
 import { useStore } from '../store';
-import { RefreshCw, CheckCircle, Clock, ShieldAlert, ArrowLeftRight } from 'lucide-react';
+import { RefreshCw, CheckCircle, Clock, ShieldAlert, ArrowLeftRight, Users, Shield } from 'lucide-react';
 
 export const DashboardPage: React.FC = () => {
   const { user, showToast } = useStore();
   const queryClient = useQueryClient();
   const [filterMode, setFilterMode] = useState<'all' | 'active' | 'overdue'>('all');
+  const [activeTab, setActiveTab] = useState<'loans' | 'permissions'>('loans');
 
   const { data: loans = [], isLoading, refetch } = useQuery({
     queryKey: ['loans', user?.role],
     queryFn: () => user?.role === 'admin' ? loansApi.listAll() : loansApi.listMy(),
     enabled: !!user,
+  });
+
+  const { data: users = [], isLoading: isUsersLoading, refetch: refetchUsers } = useQuery({
+    queryKey: ['users'],
+    queryFn: () => authApi.listUsers(),
+    enabled: !!user && user.role === 'admin' && activeTab === 'permissions',
+  });
+
+  const changeRoleMutation = useMutation({
+    mutationFn: ({ userId, role }: { userId: number; role: 'admin' | 'member' }) =>
+      authApi.updateUserRole(userId, role),
+    onSuccess: (updatedUser) => {
+      queryClient.invalidateQueries({ queryKey: ['users'] });
+      showToast(`Role updated for user "${updatedUser.username}"!`, 'success');
+    },
+    onError: (err) => {
+      let msg = 'Failed to update user role.';
+      if (axios.isAxiosError(err) && err.response?.data?.error?.message) {
+        msg = err.response.data.error.message;
+      }
+      showToast(msg, 'error');
+    }
   });
 
   const returnMutation = useMutation({
@@ -89,7 +112,7 @@ export const DashboardPage: React.FC = () => {
         </div>
 
         <button
-          onClick={() => refetch()}
+          onClick={() => activeTab === 'permissions' ? refetchUsers() : refetch()}
           className="brut-btn brut-btn-secondary"
           style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem 1rem' }}
         >
@@ -97,13 +120,152 @@ export const DashboardPage: React.FC = () => {
         </button>
       </div>
 
-      {/* Stats row */}
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
-        gap: '1.5rem',
-        marginBottom: '2.5rem'
-      }}>
+      {user?.role === 'admin' && (
+        <div style={{
+          display: 'flex',
+          gap: '1rem',
+          borderBottom: '3px solid #000000',
+          marginBottom: '2rem',
+          paddingBottom: '0.5rem'
+        }}>
+          <button
+            onClick={() => setActiveTab('loans')}
+            className="brut-btn"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.5rem',
+              padding: '0.5rem 1rem',
+              fontWeight: 800,
+              backgroundColor: activeTab === 'loans' ? 'var(--primary)' : '#FFFFFF',
+              boxShadow: activeTab === 'loans' ? '2px 2px 0px #000000' : 'none'
+            }}
+          >
+            <ArrowLeftRight size={16} /> LOAN TRANSACTIONS
+          </button>
+          <button
+            onClick={() => setActiveTab('permissions')}
+            className="brut-btn"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.5rem',
+              padding: '0.5rem 1rem',
+              fontWeight: 800,
+              backgroundColor: activeTab === 'permissions' ? 'var(--primary)' : '#FFFFFF',
+              boxShadow: activeTab === 'permissions' ? '2px 2px 0px #000000' : 'none'
+            }}
+          >
+            <Users size={16} /> MANAGE PERMISSIONS
+          </button>
+        </div>
+      )}
+
+      {user?.role === 'admin' && activeTab === 'permissions' ? (
+        isUsersLoading ? (
+          <div style={{ textAlign: 'center', padding: '3rem 0' }}>
+            <div style={{
+              display: 'inline-block',
+              width: '40px',
+              height: '40px',
+              border: '4px solid var(--primary)',
+              borderTopColor: 'transparent',
+              animation: 'spin 1s linear infinite',
+              boxShadow: '2px 2px 0px #000000'
+            }} />
+            <p style={{ marginTop: '1rem', fontWeight: 700 }}>LOADING USERS...</p>
+          </div>
+        ) : (
+          <div style={{
+            border: 'var(--border-width) solid var(--border-color)',
+            boxShadow: '4px 4px 0px #000000',
+            overflowX: 'auto',
+            backgroundColor: '#FFFFFF'
+          }}>
+            <table style={{
+              width: '100%',
+              borderCollapse: 'collapse',
+              textAlign: 'left',
+              fontSize: '0.9rem'
+            }}>
+              <thead>
+                <tr style={{
+                  backgroundColor: '#FAF7F2',
+                  borderBottom: 'var(--border-width) solid var(--border-color)'
+                }}>
+                  <th style={{ padding: '1rem', fontWeight: 800 }}>USERNAME</th>
+                  <th style={{ padding: '1rem', fontWeight: 800 }}>FULL NAME</th>
+                  <th style={{ padding: '1rem', fontWeight: 800 }}>EMAIL</th>
+                  <th style={{ padding: '1rem', fontWeight: 800 }}>ROLE</th>
+                  <th style={{ padding: '1rem', fontWeight: 800 }}>ACTION</th>
+                </tr>
+              </thead>
+              <tbody>
+                {users.map((u) => {
+                  const isSelf = u.id === user?.id;
+                  return (
+                    <tr key={u.id} style={{ borderBottom: '2px solid #E5E7EB' }}>
+                      <td style={{ padding: '1rem', fontWeight: 700 }}>{u.username}</td>
+                      <td style={{ padding: '1rem' }}>{u.full_name || 'N/A'}</td>
+                      <td style={{ padding: '1rem' }}>{u.email}</td>
+                      <td style={{ padding: '1rem' }}>
+                        <span style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '0.25rem',
+                          backgroundColor: u.role === 'admin' ? 'var(--accent)' : 'var(--primary)',
+                          border: '1.5px solid #000000',
+                          padding: '0.2rem 0.5rem',
+                          fontSize: '0.75rem',
+                          fontWeight: 800,
+                          boxShadow: '1px 1px 0px #000000',
+                          textTransform: 'uppercase'
+                        }}>
+                          {u.role === 'admin' && <Shield size={12} />}
+                          {u.role}
+                        </span>
+                      </td>
+                      <td style={{ padding: '1rem' }}>
+                        {isSelf ? (
+                          <span style={{ fontSize: '0.8rem', color: '#6B7280', fontStyle: 'italic' }}>
+                            You (Logged In)
+                          </span>
+                        ) : (
+                          <button
+                            onClick={() => changeRoleMutation.mutate({
+                              userId: u.id,
+                              role: u.role === 'admin' ? 'member' : 'admin'
+                            })}
+                            disabled={changeRoleMutation.isPending}
+                            className="brut-btn"
+                            style={{
+                              padding: '0.3rem 0.6rem',
+                              fontSize: '0.75rem',
+                              backgroundColor: u.role === 'admin' ? '#FCA5A5' : '#86EFAC',
+                              boxShadow: '1.5px 1.5px 0px #000000',
+                              cursor: changeRoleMutation.isPending ? 'not-allowed' : 'pointer'
+                            }}
+                          >
+                            {u.role === 'admin' ? 'DEMOTE TO MEMBER' : 'PROMOTE TO ADMIN'}
+                          </button>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        )
+      ) : (
+        <>
+          {/* Stats row */}
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+            gap: '1.5rem',
+            marginBottom: '2.5rem'
+          }}>
         {/* Total checkouts card */}
         <div className="brut-card" style={{ backgroundColor: 'var(--secondary)', display: 'flex', alignItems: 'center', gap: '1rem' }}>
           <div style={{ backgroundColor: '#FFFFFF', border: '2px solid #000000', padding: '0.75rem', display: 'flex' }}>
@@ -305,6 +467,8 @@ export const DashboardPage: React.FC = () => {
             </tbody>
           </table>
         </div>
+      )}
+        </>
       )}
     </div>
   );

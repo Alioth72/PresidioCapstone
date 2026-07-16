@@ -129,7 +129,7 @@ export const authApi = {
     return res.data;
   },
   register: async (payload: UserRegisterPayload) => {
-    const res = await api.post<User>('/api/auth/register', payload);
+    const res = await api.post<User>('/api/auth/signup', payload);
     return res.data;
   },
   logout: async () => {
@@ -138,6 +138,14 @@ export const authApi = {
   },
   getMe: async () => {
     const res = await api.get<User>('/api/auth/me');
+    return res.data;
+  },
+  listUsers: async () => {
+    const res = await api.get<User[]>('/api/auth/users');
+    return res.data;
+  },
+  updateUserRole: async (userId: number, role: 'admin' | 'member') => {
+    const res = await api.put<User>(`/api/auth/users/${userId}/role`, { role });
     return res.data;
   },
 };

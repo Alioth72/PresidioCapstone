@@ -9,13 +9,14 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, or_
 
 from backend.db.session import get_db
-from backend.db.models import User
-from backend.schemas import UserCreate, UserLogin, UserResponse, TokenResponse
+from backend.db.models import User, UserRole
+from backend.schemas import UserCreate, UserLogin, UserResponse, TokenResponse, UserUpdateRole
 from backend.services.auth_service import (
     hash_password,
     verify_password,
     create_access_token,
     get_current_user,
+    require_admin,
 )
 from backend.config import settings
 
@@ -50,7 +51,7 @@ async def signup(user_data: UserCreate, db: AsyncSession = Depends(get_db)):
         email=user_data.email,
         full_name=user_data.full_name,
         hashed_password=hash_password(user_data.password),
-        role=user_data.role,
+        role=UserRole.MEMBER,
         is_active=True
     )
     
@@ -118,3 +119,37 @@ async def logout(response: Response):
 async def get_me(current_user: User = Depends(get_current_user)):
     """Return the currently logged in user info."""
     return current_user
+
+
+@router.get("/users", response_model=list[UserResponse])
+async def list_users(
+    current_user: User = Depends(require_admin),
+    db: AsyncSession = Depends(get_db)
+):
+    """List all registered users (Admin only)."""
+    result = await db.execute(select(User).order_by(User.username.asc()))
+    users = result.scalars().all()
+    return users
+
+
+@router.put("/users/{user_id}/role", response_model=UserResponse)
+async def update_user_role(
+    user_id: int,
+    payload: UserUpdateRole,
+    current_user: User = Depends(require_admin),
+    db: AsyncSession = Depends(get_db)
+):
+    """Update a user's role (Admin only)."""
+    result = await db.execute(select(User).where(User.id == user_id))
+    user = result.scalar_one_or_none()
+    
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found."
+        )
+        
+    user.role = payload.role
+    await db.commit()
+    await db.refresh(user)
+    return user

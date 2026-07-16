@@ -192,25 +192,6 @@ export const LoginPage: React.FC = () => {
                   </span>
                 )}
               </div>
-
-              <div>
-                <label style={{ display: 'block', fontWeight: 700, fontSize: '0.85rem', marginBottom: '0.4rem', textTransform: 'uppercase' }}>
-                  System Role *
-                </label>
-                <select
-                  className="brut-input brut-input-select"
-                  {...register('role')}
-                  style={{ fontWeight: 600 }}
-                >
-                  <option value="member">Member (Borrow, Return, Chat)</option>
-                  <option value="admin">Admin (Manage Catalog & Loans)</option>
-                </select>
-                {errors.role && (
-                  <span style={{ color: '#DC2626', fontSize: '0.75rem', fontWeight: 700, marginTop: '0.2rem', display: 'block' }}>
-                    {errors.role.message}
-                  </span>
-                )}
-              </div>
             </>
           )}
 
