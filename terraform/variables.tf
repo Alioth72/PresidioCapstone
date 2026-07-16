@@ -13,7 +13,7 @@ variable "environment" {
 variable "location" {
   type        = string
   description = "Azure region to deploy resources in"
-  default     = "eastus"
+  default     = "centralindia"
 }
 
 variable "gemini_api_key" {

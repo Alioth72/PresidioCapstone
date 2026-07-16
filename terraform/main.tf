@@ -45,10 +45,11 @@ resource "azurerm_role_definition" "kv_secrets_reader" {
 
   permissions {
     actions = [
-      "Microsoft.KeyVault/vaults/secrets/readMetadata/action"
+      "Microsoft.KeyVault/vaults/read"
     ]
     data_actions = [
-      "Microsoft.KeyVault/vaults/secrets/read"
+      "Microsoft.KeyVault/vaults/secrets/getSecret/action",
+      "Microsoft.KeyVault/vaults/secrets/readMetadata/action"
     ]
   }
 
@@ -126,21 +127,10 @@ resource "azurerm_postgresql_flexible_server_firewall_rule" "allow_azure_service
   end_ip_address   = "0.0.0.0"
 }
 
-# ─── Log Analytics ───
-resource "azurerm_log_analytics_workspace" "law" {
-  name                = "law-${var.project_name}-${var.environment}"
-  location            = azurerm_resource_group.rg.location
-  resource_group_name = azurerm_resource_group.rg.name
-  sku                 = "PerGB2018"
-  retention_in_days   = 30
-}
-
-# ─── Container Apps Environment ───
-resource "azurerm_container_app_environment" "env" {
-  name                       = "cae-${var.project_name}-${var.environment}"
-  location                   = azurerm_resource_group.rg.location
-  resource_group_name        = azurerm_resource_group.rg.name
-  log_analytics_workspace_id = azurerm_log_analytics_workspace.law.id
+# ─── Reference Existing Container App Environment (Subscription Quota Workaround) ───
+data "azurerm_container_app_environment" "env" {
+  name                = "cae-simple-api"
+  resource_group_name = "rg-simple-api"
 }
 
 # Construct Database Connection String Key Vault Secret
@@ -155,7 +145,7 @@ resource "azurerm_key_vault_secret" "db_url" {
 # ─── Container App Backend ───
 resource "azurerm_container_app" "backend" {
   name                         = "ca-${var.project_name}-backend-${var.environment}"
-  container_app_environment_id = azurerm_container_app_environment.env.id
+  container_app_environment_id = data.azurerm_container_app_environment.env.id
   resource_group_name          = azurerm_resource_group.rg.name
   revision_mode                = "Single"
 
@@ -227,7 +217,7 @@ resource "azurerm_container_app" "backend" {
 # ─── Container App Frontend ───
 resource "azurerm_container_app" "frontend" {
   name                         = "ca-${var.project_name}-frontend-${var.environment}"
-  container_app_environment_id = azurerm_container_app_environment.env.id
+  container_app_environment_id = data.azurerm_container_app_environment.env.id
   resource_group_name          = azurerm_resource_group.rg.name
   revision_mode                = "Single"
 
