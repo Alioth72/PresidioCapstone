@@ -175,7 +175,7 @@ resource "azurerm_container_app" "backend" {
   template {
     container {
       name   = "backend"
-      image  = "presidiocapstone-backend:latest" # In prod, would point to an ACR image
+      image  = "mcr.microsoft.com/k8se/quickstart:latest"
       cpu    = "0.25"
       memory = "0.5Gi"
 
@@ -224,9 +224,14 @@ resource "azurerm_container_app" "frontend" {
   template {
     container {
       name   = "frontend"
-      image  = "presidiocapstone-frontend:latest" # In prod, would point to an ACR image
+      image  = "mcr.microsoft.com/k8se/quickstart:latest"
       cpu    = "0.25"
       memory = "0.5Gi"
+
+      env {
+        name  = "VITE_API_URL"
+        value = "https://${azurerm_container_app.backend.ingress[0].fqdn}"
+      }
     }
 
     min_replicas = 0 # Scale to zero when not in use to save student credits
