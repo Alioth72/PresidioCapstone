@@ -5,6 +5,7 @@ Book service — catalog CRUD and search logic.
 from typing import Optional
 from sqlalchemy import select, or_, func, desc
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
 
 from backend.db.models import Book
 from backend.schemas import BookCreate, BookUpdate
@@ -26,7 +27,7 @@ async def list_books(
     offset = (page - 1) * limit
     
     # Base query
-    query = select(Book)
+    query = select(Book).options(selectinload(Book.reviews))
     
     # Filtering
     if category:
@@ -79,7 +80,11 @@ async def list_books(
 
 async def get_book(db: AsyncSession, book_id: int) -> Optional[Book]:
     """Retrieve a single book by ID."""
-    result = await db.execute(select(Book).where(Book.id == book_id))
+    result = await db.execute(
+        select(Book)
+        .options(selectinload(Book.reviews))
+        .where(Book.id == book_id)
+    )
     return result.scalar_one_or_none()
 
 
@@ -163,14 +168,19 @@ async def search_books(db: AsyncSession, query: str) -> list[Book]:
     Performs standard ILIKE across title, author, category, description.
     """
     search_filter = f"%{query}%"
-    stmt = select(Book).where(
-        or_(
-            Book.title.ilike(search_filter),
-            Book.author.ilike(search_filter),
-            Book.category.ilike(search_filter),
-            Book.description.ilike(search_filter)
+    stmt = (
+        select(Book)
+        .options(selectinload(Book.reviews))
+        .where(
+            or_(
+                Book.title.ilike(search_filter),
+                Book.author.ilike(search_filter),
+                Book.category.ilike(search_filter),
+                Book.description.ilike(search_filter)
+            )
         )
-    ).limit(10)  # Cap search results for assistant
+        .limit(10)
+    )  # Cap search results for assistant
     
     result = await db.execute(stmt)
     return list(result.scalars().all())

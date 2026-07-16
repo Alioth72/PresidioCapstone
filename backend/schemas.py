@@ -93,6 +93,9 @@ class BookResponse(BaseModel):
     publication_year: Optional[int]
     total_copies: int
     available_copies: int
+    cover_image_url: Optional[str]
+    average_rating: float
+    review_count: int
     created_at: datetime
     updated_at: datetime
 
@@ -147,6 +150,26 @@ class ChatMessageResponse(BaseModel):
     content: str
     actions_taken: list[str]
     created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+# ─── Review Schemas ───
+
+class ReviewCreate(BaseModel):
+    rating: int = Field(..., ge=1, le=5)
+    comment: Optional[str] = Field(None, max_length=1000)
+
+
+class ReviewResponse(BaseModel):
+    id: int
+    user_id: int
+    book_id: int
+    rating: int
+    comment: Optional[str]
+    created_at: datetime
+    username: str
 
     class Config:
         from_attributes = True

@@ -15,7 +15,7 @@ from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sess
 from backend.config import settings
 from backend.main import app
 from backend.db.session import Base, get_db
-from backend.db.models import User, UserRole, Book, Loan, ChatMessage
+from backend.db.models import User, UserRole, Book, Loan, ChatMessage, Review
 from backend.services.auth_service import hash_password
 
 # Thread-safe/Loop-safe engine registry
@@ -80,6 +80,7 @@ async def clean_database():
     sessionmaker = get_test_sessionmaker()
     async with sessionmaker() as db:
         # Delete all records
+        await db.execute(Review.__table__.delete())
         await db.execute(Loan.__table__.delete())
         await db.execute(ChatMessage.__table__.delete())
         await db.execute(Book.__table__.delete())

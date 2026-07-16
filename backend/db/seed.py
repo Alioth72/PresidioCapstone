@@ -13,7 +13,7 @@ import bcrypt as _bcrypt
 from sqlalchemy import select, func
 
 from backend.db.session import async_session, init_db
-from backend.db.models import User, Book, Loan, UserRole
+from backend.db.models import User, Book, Loan, UserRole, Review
 
 # ─── Seed Data ───
 
@@ -167,9 +167,10 @@ async def seed():
 
         # ─── Books ───
         random.seed(42)  # Reproducible copy counts
-        books = []
+        books = []  
         for title, author, isbn, desc, category, publisher, year in SEED_BOOKS:
             copies = random.randint(1, 5)
+            cover_url = f"https://covers.openlibrary.org/b/isbn/{isbn.replace('-', '')}-L.jpg" if isbn else None
             book = Book(
                 title=title,
                 author=author,
@@ -180,6 +181,7 @@ async def seed():
                 publication_year=year,
                 total_copies=copies,
                 available_copies=copies,
+                cover_image_url=cover_url,
             )
             db.add(book)
             books.append(book)
@@ -215,8 +217,31 @@ async def seed():
             # Decrement availability
             book.available_copies = max(0, book.available_copies - 1)
 
-        await db.commit()
+        await db.flush()
         print(f"Created {len(loan_configs)} sample loans (2 overdue).")
+
+        # ─── Sample Reviews ───
+        sample_reviews = [
+            (0, "member", 5, "An absolute masterpiece. Orwell's warning is as relevant today as it was in 1949. Highly recommended!"),
+            (0, "admin", 4, "A chilling read. Extremely atmospheric and thought-provoking, though a bit slow in the second act."),
+            (1, "member", 5, "Harper Lee writes beautifully. Atticus Finch is one of the greatest literary characters of all time."),
+            (2, "member", 4, "A tragic and beautiful story. The writing style is top-notch, capturing the Jazz Age perfectly."),
+            (5, "member", 5, "Dune is the ultimate science fiction epic. The worldbuilding is mind-blowing. Must read!")
+        ]
+
+        for idx, username, rating, comment in sample_reviews:
+            book = books[idx]
+            user = users[username]
+            review = Review(
+                user_id=user.id,
+                book_id=book.id,
+                rating=rating,
+                comment=comment
+            )
+            db.add(review)
+
+        await db.commit()
+        print(f"Created {len(sample_reviews)} sample reviews.")
         print("Seed complete!")
 
 

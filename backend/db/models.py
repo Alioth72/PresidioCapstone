@@ -18,6 +18,7 @@ from sqlalchemy import (
     Column, Integer, String, Enum, ForeignKey, Text, Boolean, JSON, Index
 )
 from sqlalchemy.orm import relationship
+from sqlalchemy.orm.attributes import instance_state
 from sqlalchemy.types import DateTime as _DateTime
 
 # Use timezone-aware timestamps for PostgreSQL (TIMESTAMPTZ)
@@ -55,6 +56,7 @@ class User(Base):
 
     loans = relationship("Loan", back_populates="user")
     chat_messages = relationship("ChatMessage", back_populates="user")
+    reviews = relationship("Review", back_populates="user", cascade="all, delete-orphan")
 
 
 class Book(Base):
@@ -70,6 +72,7 @@ class Book(Base):
     publication_year = Column(Integer, nullable=True)
     total_copies = Column(Integer, default=1, nullable=False)
     available_copies = Column(Integer, default=1, nullable=False)
+    cover_image_url = Column(String(500), nullable=True)
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
     updated_at = Column(
         DateTime,
@@ -78,6 +81,23 @@ class Book(Base):
     )
 
     loans = relationship("Loan", back_populates="book")
+    reviews = relationship("Review", back_populates="book", cascade="all, delete-orphan")
+
+    @property
+    def average_rating(self) -> float:
+        state = instance_state(self)
+        if "reviews" in state.unloaded:
+            return 0.0
+        if not self.reviews:
+            return 0.0
+        return round(sum(r.rating for r in self.reviews) / len(self.reviews), 2)
+
+    @property
+    def review_count(self) -> int:
+        state = instance_state(self)
+        if "reviews" in state.unloaded:
+            return 0
+        return len(self.reviews)
 
 
 class Loan(Base):
@@ -124,3 +144,22 @@ class ChatMessage(Base):
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
 
     user = relationship("User", back_populates="chat_messages")
+
+
+class Review(Base):
+    __tablename__ = "reviews"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
+    book_id = Column(Integer, ForeignKey("books.id"), nullable=False, index=True)
+    rating = Column(Integer, nullable=False)
+    comment = Column(Text, nullable=True)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), nullable=False)
+
+    user = relationship("User", back_populates="reviews")
+    book = relationship("Book", back_populates="reviews")
+
+    @property
+    def username(self) -> str:
+        return self.user.username if self.user else ""
+

@@ -8,8 +8,8 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from backend.db.session import get_db
-from backend.db.models import User
-from backend.schemas import BookCreate, BookUpdate, BookResponse, PaginatedResponse
+from backend.db.models import User, Review
+from backend.schemas import BookCreate, BookUpdate, BookResponse, PaginatedResponse, ReviewCreate, ReviewResponse
 from backend.services.auth_service import require_admin, get_current_user
 from backend.services import book_service
 
@@ -114,3 +114,72 @@ async def delete_book(
             detail=str(e)
         )
     return None
+
+
+@router.get("/{book_id}/reviews", response_model=list[ReviewResponse])
+async def get_book_reviews(
+    book_id: int,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """Retrieve all reviews for a specific book."""
+    from sqlalchemy import select
+    from sqlalchemy.orm import selectinload
+    
+    # Check if book exists
+    book = await book_service.get_book(db, book_id)
+    if not book:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Book not found."
+        )
+        
+    stmt = (
+        select(Review)
+        .options(selectinload(Review.user))
+        .where(Review.book_id == book_id)
+        .order_by(Review.created_at.desc())
+    )
+    result = await db.execute(stmt)
+    return list(result.scalars().all())
+
+
+@router.post("/{book_id}/reviews", response_model=ReviewResponse, status_code=status.HTTP_201_CREATED)
+async def create_book_review(
+    book_id: int,
+    payload: ReviewCreate,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """Add a review and rating for a book. Each user is limited to one review per book."""
+    from sqlalchemy import select
+    
+    # Check if book exists
+    book = await book_service.get_book(db, book_id)
+    if not book:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Book not found."
+        )
+        
+    # Check if user already reviewed this book
+    dup_stmt = select(Review).where(Review.book_id == book_id, Review.user_id == current_user.id)
+    dup_res = await db.execute(dup_stmt)
+    if dup_res.scalar_one_or_none():
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="You have already reviewed this book."
+        )
+        
+    new_review = Review(
+        user_id=current_user.id,
+        book_id=book_id,
+        rating=payload.rating,
+        comment=payload.comment
+    )
+    
+    db.add(new_review)
+    await db.commit()
+    await db.refresh(new_review)
+    return new_review
+

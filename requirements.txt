@@ -1,5 +1,6 @@
 # Google Gemini AI
 google-genai>=1.0.0
+openai>=2.0.0
 
 # API Framework
 fastapi>=0.115.0
