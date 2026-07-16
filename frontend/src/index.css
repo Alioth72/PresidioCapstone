@@ -112,6 +112,7 @@ h3 {
 
 .brut-btn-primary {
   background-color: var(--primary);
+  color: #000000 !important;
   box-shadow: var(--shadow-offset) var(--shadow-offset) 0px var(--border-color);
 }
 .brut-btn-primary:hover {
@@ -120,6 +121,7 @@ h3 {
 
 .brut-btn-secondary {
   background-color: var(--secondary);
+  color: #000000 !important;
   box-shadow: var(--shadow-offset) var(--shadow-offset) 0px var(--border-color);
 }
 .brut-btn-secondary:hover {

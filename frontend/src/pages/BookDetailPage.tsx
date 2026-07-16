@@ -451,7 +451,7 @@ export const BookDetailPage: React.FC = () => {
                             onClick={() => setRating(num)}
                             style={{
                               backgroundColor: num <= rating ? 'var(--primary)' : 'rgba(156, 163, 175, 0.2)',
-                              color: 'var(--text-color)',
+                              color: num <= rating ? '#000000' : 'var(--text-color)',
                               border: '2.5px solid var(--border-color)',
                               width: '36px',
                               height: '36px',

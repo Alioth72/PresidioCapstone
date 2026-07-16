@@ -28,7 +28,7 @@ ChartJS.register(
 
 
 export const DashboardPage: React.FC = () => {
-  const { user, showToast } = useStore();
+  const { user, showToast, theme } = useStore();
   const queryClient = useQueryClient();
   const [filterMode, setFilterMode] = useState<'all' | 'active' | 'overdue'>('all');
   const [activeTab, setActiveTab] = useState<'loans' | 'permissions' | 'analytics'>('loans');
@@ -101,6 +101,9 @@ export const DashboardPage: React.FC = () => {
     categoryCounts[cat] = (categoryCounts[cat] || 0) + 1;
   });
 
+  const textColor = theme === 'dark' ? '#F3F4F6' : '#000000';
+  const gridColor = theme === 'dark' ? 'rgba(243, 244, 246, 0.15)' : 'rgba(0, 0, 0, 0.15)';
+
   const barChartData = {
     labels: Object.keys(categoryCounts),
     datasets: [
@@ -108,7 +111,7 @@ export const DashboardPage: React.FC = () => {
         label: 'Number of Borrows',
         data: Object.values(categoryCounts),
         backgroundColor: '#FDE047', // var(--primary)
-        borderColor: '#000000',
+        borderColor: textColor,
         borderWidth: 2,
         borderRadius: 0,
       },
@@ -121,19 +124,19 @@ export const DashboardPage: React.FC = () => {
     plugins: {
       legend: {
         labels: {
-          color: 'var(--text-color)',
-          font: { family: 'Outfit, sans-serif', weight: 800, size: 12 },
+          color: textColor,
+          font: { family: 'Lexend, sans-serif', weight: 800, size: 12 },
         },
       },
     },
     scales: {
       x: {
-        grid: { color: 'rgba(156, 163, 175, 0.15)' },
-        ticks: { color: 'var(--text-color)', font: { family: 'Outfit, sans-serif', weight: 700 } },
+        grid: { color: gridColor },
+        ticks: { color: textColor, font: { family: 'Lexend, sans-serif', weight: 700 } },
       },
       y: {
-        grid: { color: 'rgba(156, 163, 175, 0.15)' },
-        ticks: { color: 'var(--text-color)', font: { family: 'Outfit, sans-serif', weight: 700 }, stepSize: 1 },
+        grid: { color: gridColor },
+        ticks: { color: textColor, font: { family: 'Lexend, sans-serif', weight: 700 }, stepSize: 1 },
       },
     },
   };
@@ -152,7 +155,7 @@ export const DashboardPage: React.FC = () => {
           '#F87171', // Overdue
           '#A78BFA', // Returned
         ],
-        borderColor: '#000000',
+        borderColor: textColor,
         borderWidth: 2,
       },
     ],
@@ -165,8 +168,8 @@ export const DashboardPage: React.FC = () => {
       legend: {
         position: 'bottom' as const,
         labels: {
-          color: 'var(--text-color)',
-          font: { family: 'Outfit, sans-serif', weight: 800, size: 12 },
+          color: textColor,
+          font: { family: 'Lexend, sans-serif', weight: 800, size: 12 },
         },
       },
     },
@@ -239,7 +242,7 @@ export const DashboardPage: React.FC = () => {
               fontWeight: 800,
               backgroundColor: activeTab === 'loans' ? 'var(--primary)' : 'var(--card-bg)',
               boxShadow: activeTab === 'loans' ? '2px 2px 0px var(--border-color)' : 'none',
-              color: 'var(--text-color)'
+              color: activeTab === 'loans' ? '#000000' : 'var(--text-color)'
             }}
           >
             <ArrowLeftRight size={16} /> LOAN TRANSACTIONS
@@ -255,7 +258,7 @@ export const DashboardPage: React.FC = () => {
               fontWeight: 800,
               backgroundColor: activeTab === 'permissions' ? 'var(--primary)' : 'var(--card-bg)',
               boxShadow: activeTab === 'permissions' ? '2px 2px 0px var(--border-color)' : 'none',
-              color: 'var(--text-color)'
+              color: activeTab === 'permissions' ? '#000000' : 'var(--text-color)'
             }}
           >
             <Users size={16} /> MANAGE PERMISSIONS
@@ -271,7 +274,7 @@ export const DashboardPage: React.FC = () => {
               fontWeight: 800,
               backgroundColor: activeTab === 'analytics' ? 'var(--primary)' : 'var(--card-bg)',
               boxShadow: activeTab === 'analytics' ? '2px 2px 0px var(--border-color)' : 'none',
-              color: 'var(--text-color)'
+              color: activeTab === 'analytics' ? '#000000' : 'var(--text-color)'
             }}
           >
             <BarChart3 size={16} /> SYSTEM ANALYTICS
@@ -482,7 +485,7 @@ export const DashboardPage: React.FC = () => {
                 fontSize: '0.85rem',
                 backgroundColor: filterMode === 'all' ? 'var(--primary)' : 'var(--card-bg)',
                 boxShadow: '2px 2px 0px var(--border-color)',
-                color: 'var(--text-color)'
+                color: filterMode === 'all' ? '#000000' : 'var(--text-color)'
               }}
             >
               ALL LOANS
@@ -495,7 +498,7 @@ export const DashboardPage: React.FC = () => {
                 fontSize: '0.85rem',
                 backgroundColor: filterMode === 'active' ? 'var(--primary)' : 'var(--card-bg)',
                 boxShadow: '2px 2px 0px var(--border-color)',
-                color: 'var(--text-color)'
+                color: filterMode === 'active' ? '#000000' : 'var(--text-color)'
               }}
             >
               ACTIVE LOANS ({activeLoansCount})
@@ -508,7 +511,7 @@ export const DashboardPage: React.FC = () => {
                 fontSize: '0.85rem',
                 backgroundColor: filterMode === 'overdue' ? 'var(--primary)' : 'var(--card-bg)',
                 boxShadow: '2px 2px 0px var(--border-color)',
-                color: overdueLoansCount > 0 ? '#DC2626' : 'var(--text-color)'
+                color: filterMode === 'overdue' ? '#000000' : (overdueLoansCount > 0 ? '#DC2626' : 'var(--text-color)')
               }}
             >
               OVERDUE LOANS ({overdueLoansCount})
