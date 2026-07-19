@@ -166,7 +166,7 @@ async def seed():
         print(f"Created {len(users)} users.")
 
         # ─── Books ───
-        random.seed(42)  # Reproducible copy counts
+        random.seed(42)  
         books = []  
         for title, author, isbn, desc, category, publisher, year in SEED_BOOKS:
             copies = random.randint(1, 5)
