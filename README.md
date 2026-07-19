@@ -110,6 +110,17 @@ docker compose up --build
   - **Key Vault Secrets Integration**: Keys and connection strings are stored in Azure Key Vault.
   - **Custom Least-Privilege IAM**: Configured a custom role definition (`azurerm_role_definition`) mapping permissions to exclusively read Key Vault secrets (`Microsoft.KeyVault/vaults/secrets/read`), assigned to the backend Container App's User-Assigned Managed Identity.
 
+## Self-Evaluation
+
+### What we would do differently with more time
+1. **Comprehensive Frontend Testing**: Currently, we have full test coverage for the FastAPI backend using `pytest`. However, frontend unit and component testing (Vitest + React Testing Library) is not fully implemented. With more time, we would implement component, routing, and theme-switching integration tests for the React UI.
+2. **True Cross-Site Request Forgery (CSRF) Tokens**: Although we leverage `SameSite=Lax` cookies and CORS restrictions to secure cookie-based JWT storage, adding an explicit double-submit cookie or anti-CSRF token handshake would provide defense-in-depth against advanced CSRF attacks.
+3. **Advanced AI Agent Guardrails**: The current Gemini Chat Assistant uses structured system prompts and local validation checks before calling database-mutating tools. Adding semantic guardrail models (like LlamaGuard) would prevent prompt injections or malicious user inputs more robustly.
+
+### Least Confident Decisions
+1. **Strict Neo-Brutalist Layouts in Dark Mode**: Adopting the highly-stylized Neo-Brutalist design (thick borders, stark borders, offset shadows) is visually striking, but it presents unique challenges for general accessibility and contrast compliance in dark mode. We spent significant effort adjusting the dark mode theme variables to ensure readable text against Canary Yellow and Lavender.
+2. **HttpOnly Cookie Fallback for REST API Clients**: Allowing the backend to accept credentials from both cookies and standard `Authorization` headers made development and API testing client execution straightforward. However, maintaining two authentication retrieval pathways adds security surface area that needs to be closely audited.
+
 ## License
 
 MIT
