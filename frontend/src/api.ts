@@ -1,8 +1,11 @@
 import axios from 'axios';
 
 // Create Axios Instance
+// In production, the frontend is served by the same FastAPI server, so
+// we use an empty baseURL to make all /api/* calls relative to the current origin.
+// In local dev, VITE_API_URL can be set to http://localhost:8000.
 export const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:8000',
+  baseURL: import.meta.env.VITE_API_URL || '',
   withCredentials: true, // Send HttpOnly session cookies
 });
 
