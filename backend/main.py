@@ -33,10 +33,18 @@ async def lifespan(app: FastAPI):
     await init_db()
     logger.info("Database ready.")
 
-    # Auto-seed in development mode
-    if settings.APP_ENV == "development":
+    # Auto-seed if database is empty (no users present)
+    from sqlalchemy import select, func
+    from backend.db.session import async_session
+    from backend.db.models import User
+    
+    async with async_session() as session:
+        result = await session.execute(select(func.count(User.id)))
+        user_count = result.scalar() or 0
+        
+    if user_count == 0:
         from backend.db.seed import seed
-        logger.info("Dev mode — running seed...")
+        logger.info("Database is empty — seeding default users and books...")
         await seed()
 
     yield
