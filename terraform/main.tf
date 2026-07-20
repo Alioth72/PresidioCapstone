@@ -175,9 +175,10 @@ resource "azurerm_container_app" "backend" {
   template {
     container {
       name   = "backend"
-      image  = "mcr.microsoft.com/k8se/quickstart:latest"
+      image  = "ghcr.io/alioth72/presidiocapstone:latest"
       cpu    = "0.25"
       memory = "0.5Gi"
+
 
       env {
         name        = "DATABASE_URL"

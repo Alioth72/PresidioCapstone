@@ -135,11 +135,38 @@ app.include_router(books_router, prefix="/api/books", tags=["Books"])
 app.include_router(loans_router, prefix="/api/loans", tags=["Loans"])
 app.include_router(chat_router, prefix="/api/chat", tags=["Chat"])
 
+# ─── Serve Frontend Static Files in Production ───
+import os
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 
-@app.get("/")
-async def root():
-    return {
-        "service": "Library Management System",
-        "status": "running",
-        "docs": "/docs",
-    }
+frontend_dist = "/app/frontend/dist"
+if os.path.exists(frontend_dist):
+    # Mount assets folder
+    assets_dir = os.path.join(frontend_dist, "assets")
+    if os.path.exists(assets_dir):
+        app.mount("/assets", StaticFiles(directory=assets_dir), name="assets")
+
+    # Serve other static files or fallback to index.html for client-side routing
+    @app.get("/{catchall:path}")
+    async def serve_frontend(catchall: str):
+        if catchall.startswith("api") or catchall.startswith("docs") or catchall.startswith("openapi.json"):
+            return JSONResponse(
+                status_code=404,
+                content={"error": {"code": "NOT_FOUND", "message": "API endpoint not found."}}
+            )
+        
+        file_path = os.path.join(frontend_dist, catchall)
+        if os.path.isfile(file_path):
+            return FileResponse(file_path)
+        
+        return FileResponse(os.path.join(frontend_dist, "index.html"))
+else:
+    @app.get("/")
+    async def root():
+        return {
+            "service": "Library Management System",
+            "status": "running",
+            "docs": "/docs",
+        }
+
